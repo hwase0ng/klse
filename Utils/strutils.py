@@ -12,6 +12,7 @@ def isnumberlist(wlist):
             return False
     return True
 
+
 def isnumber(width):
     try:
         width = float(width)

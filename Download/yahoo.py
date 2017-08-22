@@ -159,6 +159,7 @@ class YahooQuote(Quote):
         resUrl = requests.get(self.url, cookies={'B': cookie})
         if resUrl.status_code != 200:
             self.csverr = str(resUrl.status_code) + ":" + resUrl.reason
+            print "ERR:", symbol, ":", self.url
             print "ERR:" + self.csverr
         else:
             '''
@@ -182,7 +183,8 @@ class YahooQuote(Quote):
                     print "DBG:", type(ds), type(open_), type(high), type(low),
                     type(close), type(adjc), type(volume)
                 if not isnumberlist([high, low, close, adjc]):
-                    print "SKIP:", ds, open_, high, low, close, adjc, volume
+                    if S.DBG_YAHOO:
+                        print "SKIP:", ds, open_, high, low, close, adjc
                     continue
                 open_, high, low, close, adjc = [
                     float(x) for x in [open_, high, low, close, adjc]]

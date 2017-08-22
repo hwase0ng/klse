@@ -11,26 +11,30 @@ from Download.google import GoogleQuote
 from Download.yahoo import YahooQuote, getYahooCookie
 from Utils.dateutils import getStartDate
 
-import sys, csv, os.path, requests, re
+import sys
+import csv
+import os.path
+import requests
+import re
 
 lastcsv = S.WORK_DIR+'lastcsv.txt'
 # Specify Date Range
 end = datetime.today().strftime("%Y-%m-%d")
-#end = '2006-01-01'
+# end = '2006-01-01'
 if os.path.exists(lastcsv):
     with open(lastcsv, 'r') as f:
         start = f.read().replace('\n', '')
     f.close()
 else:
     start = S.ABS_START
-#http://ichart.finance.yahoo.com/table.csv?s=0012.KL&a=0&b=01&c=1995&d=0&e=01&f=2006
-#http://ichart.finance.yahoo.com/table.csv?s=0012.KL&a=0&b=01&c=1995&d=6&e=17&f=2016
+# http://ichart.finance.yahoo.com/table.csv?s=0012.KL&a=0&b=01&c=1995&d=0&e=01&f=2006
+# http://ichart.finance.yahoo.com/table.csv?s=0012.KL&a=0&b=01&c=1995&d=6&e=17&f=2016
 '''
 if start==end:
     print "CSV for ",start, " is already downloaded."
     sys.exit(1)
 elif start > end:
-    print "Invalid start date ", start, "is > ", end 
+    print "Invalid start date ", start, "is > ", end
     sys.exit(2)
 '''
 gDict = {}
@@ -43,22 +47,27 @@ print "Downloading from "+S.market_source+" with " + S.WORK_DIR+S.market_file
 with open(S.WORK_DIR+S.market_file, 'r') as f:
     reader = csv.reader(f)
     slist = list(reader)
-    #print slist[:3]
+    if S.DBG_ALL:
+        print slist[:3]
     for counter in slist[:]:
-        #print "\t"+counter
+        if S.DBG_ALL:
+            print "\t"+counter
         if len(counter) <= 0:
             print "\t" + "Wrong len=" + len(counter)
             continue
         stock_symbol = counter[0].split('.')
         stock_name = stock_symbol[0]
         stock_code = counter[1]
-        #print stock_name,stock_symbol,stock_code
-        sfile = S.WORK_DIR + S.market_source + '/' + stock_name + '.' + stock_code + '.csv'
-        stmp =sfile + 'tmp'
+        if S.DBG_ALL:
+            print stock_name, stock_symbol, stock_code
+        sfile = (S.WORK_DIR + S.market_source + '/' + stock_name + '.' +
+                 stock_code + '.csv')
+        stmp = sfile + 'tmp'
         OK = True
         try:
             start = getStartDate(sfile)
-            #print "\t"+start+"..."+sfile
+            if S.DBG_ALL:
+                print "\t"+start+"..."+sfile
             if len(start) == 0:
                 start = S.ABS_START
             elif len(start) > 10:
@@ -68,9 +77,11 @@ with open(S.WORK_DIR+S.market_file, 'r') as f:
                 errlist.append([errstr])
                 start = ""
             elif start >= end:
-                #print "\t"+stock_name + " skipped"
+                if S.DBG_ALL:
+                    print "\t"+stock_name + " skipped"
                 start = ""
-            #print "\tDates="+start+","+end
+            if S.DBG_ALL:
+                print "\tDates="+start+","+end
             if len(start) > 0:
                 if S.market_source == 'google':
                     q = GoogleQuote(stock_name, start, end)
@@ -82,7 +93,8 @@ with open(S.WORK_DIR+S.market_file, 'r') as f:
                 OK = False
         except Exception, e:
             print '  ERR2:', stock_code + ":" + stock_name + ":" + str(e)
-            #print q.getCsvErr()
+            if S.DBG_ALL:
+                print q.getCsvErr()
             OK = False
             errlist.append([stock_name])
 
