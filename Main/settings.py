@@ -9,4 +9,5 @@ market_source = 'yahoo'  # or 'google'
 market_file = 'klse.txt'
 DBG_ALL = False
 DBG_YAHOO = False
+INF_YAHOO = True
 ABS_START = '1990-01-01'

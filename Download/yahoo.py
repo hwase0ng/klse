@@ -162,6 +162,7 @@ class YahooQuote(Quote):
             print "ERR:", symbol, ":", self.url
             print "ERR:" + self.csverr
         else:
+            self.csverr = ''
             '''
             csv = resUrl.text
             csv.reverse()

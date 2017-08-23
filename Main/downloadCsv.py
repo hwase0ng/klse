@@ -87,8 +87,17 @@ with open(S.WORK_DIR+S.market_file, 'r') as f:
                     q = GoogleQuote(stock_name, start, end)
                 else:
                     q = YahooQuote(cookie, crumb, stock_code, start, end)
-                gDict[stock_name] = q.url
-                q.write_csv(stmp)
+                if len(q.getCsvErr()) > 0:
+                    st_code, st_reason = q.getCsvErr().split(":")
+                    if S.INF_YAHOO:
+                        print "INF:", st_code, ":", stock_name
+                    if int(st_code) == 401:  # Unauthorized
+                        if S.DBG_YAHOO:
+                            print "DBG:get new cookie, st_code=", st_code
+                        cookie, crumb = getYahooCookie()
+                else:
+                    gDict[stock_name] = q.url
+                    q.write_csv(stmp)
             else:
                 OK = False
         except Exception, e:
