@@ -11,3 +11,4 @@ DBG_ALL = False
 DBG_YAHOO = False
 INF_YAHOO = True
 ABS_START = '1990-01-01'
+RESUME_FILE = False

@@ -17,7 +17,7 @@ import os.path
 import requests
 import re
 
-lastcsv = S.WORK_DIR+'lastcsv.txt'
+lastcsv = S.WORK_DIR + 'lastcsv.txt'
 # Specify Date Range
 end = datetime.today().strftime("%Y-%m-%d")
 # end = '2006-01-01'
@@ -43,15 +43,15 @@ q = ''
 
 cookie, crumb = getYahooCookie()
 
-print "Downloading from "+S.market_source+" with " + S.WORK_DIR+S.market_file
-with open(S.WORK_DIR+S.market_file, 'r') as f:
+print "Downloading from " + S.market_source + " with " + S.WORK_DIR + S.market_file
+with open(S.WORK_DIR + S.market_file, 'r') as f:
     reader = csv.reader(f)
     slist = list(reader)
     if S.DBG_ALL:
         print slist[:3]
     for counter in slist[:]:
         if S.DBG_ALL:
-            print "\t"+counter
+            print "\t" + counter
         if len(counter) <= 0:
             print "\t" + "Wrong len=" + len(counter)
             continue
@@ -65,9 +65,12 @@ with open(S.WORK_DIR+S.market_file, 'r') as f:
         stmp = sfile + 'tmp'
         OK = True
         try:
-            start = getStartDate(sfile)
+            if S.RESUME_FILE:
+                start = getStartDate(sfile)
+            else:
+                start = S.ABS_START
             if S.DBG_ALL:
-                print "\t"+start+"..."+sfile
+                print "\t" + start + "..." + sfile
             if len(start) == 0:
                 start = S.ABS_START
             elif len(start) > 10:
@@ -78,15 +81,15 @@ with open(S.WORK_DIR+S.market_file, 'r') as f:
                 start = ""
             elif start >= end:
                 if S.DBG_ALL:
-                    print "\t"+stock_name + " skipped"
+                    print "\t" + stock_name + " skipped"
                 start = ""
             if S.DBG_ALL:
-                print "\tDates="+start+","+end
+                print "\tDates=" + start + "," + end
             if len(start) > 0:
                 if S.market_source == 'google':
                     q = GoogleQuote(stock_name, start, end)
                 else:
-                    q = YahooQuote(cookie, crumb, stock_code, start, end)
+                    q = YahooQuote(cookie, crumb, stock_name, stock_code, start, end)
                 if len(q.getCsvErr()) > 0:
                     st_code, st_reason = q.getCsvErr().split(":")
                     if S.INF_YAHOO:
