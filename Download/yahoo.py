@@ -79,7 +79,7 @@ class Quote(object):
 
     def to_csv(self):
         # return ''.join(["{0},{1},{2},{3:.2f},{4:.2f},{5:.2f},{6:.2f},{7}\n".format(self.symbol,
-        return ''.join(["{0},{1},{2:.2f},{3:.2f},{4:.2f},{5:.2f},{6}\n".format(
+        return ''.join(["{0},{1},{2:.4f},{3:.4f},{4:.4f},{5:.4f},{6}\n".format(
             self.sname,
             self.date[bar].strftime('%Y-%m-%d'),  # self.time[bar].strftime('%H:%M:%S'),
             self.open_[bar], self.high[bar], self.low[bar],
@@ -149,7 +149,7 @@ class YahooQuote(Quote):
     def __init__(self, cookie, crumb, sname, symbol, start_date,
                  end_date=date.today().isoformat()):
         super(YahooQuote, self).__init__()
-        self.sname = sname.upper() + '-' + symbol
+        self.sname = sname.upper()
         self.symbol = symbol.upper()
         if S.DBG_ALL or S.DBG_YAHOO:
             print "DBG:YahooQuote:1:", symbol, self.symbol, start_date
@@ -202,18 +202,36 @@ class YahooQuote(Quote):
                     print "ERR:Invalid High:H<O,C, Patched.", sname, csv
                     if high < open_:
                         high = open_
-                    else:
+                    if high < close:
                         high = close
                 if open_ < low or close < low:
                     print "ERR:Invalid Low:L>O,C, Patched.", sname, csv
                     if low > open_:
                         low = open_
-                    else:
+                    if low > close:
                         low = close
-                if close != adjc:
-                    factor = adjc / close
-                    open_, high, low, close = [
-                        x * factor for x in [open_, high, low, close]]
+                if low * 10000 < 1.0 or high * 10000 < 1.0:
+                    if open_ * 10000 < 1.0 and close * 10000 < 1.0:
+                        print "ERR:0 values detected - SKIPPED", sname, csv
+                        continue
+                    else:
+                        print "INF:0 value detected - PATCHED", sname, csv
+                        if low * 10000 < 1.0:
+                            if open_ < close:
+                                low = open_
+                            else:
+                                low = close
+                        else:
+                            if high * 10000 < 1.0:
+                                if open_ > close:
+                                    high = open_
+                                else:
+                                    high = close
+                if not S.PRICE_WITHOUT_SPLIT:
+                    if close != adjc:
+                        factor = adjc / close
+                        open_, high, low, close = [
+                            x * factor for x in [open_, high, low, close]]
                 dt = datetime.strptime(ds, '%Y-%m-%d')
                 self.append(dt, open_, high, low, close, volume)
             if S.DBG_ALL:
@@ -221,10 +239,14 @@ class YahooQuote(Quote):
 
 
 if __name__ == '__main__':
-    stock_code = '4324.KL'
+    stock_code = '5115.KL'
+    stock_name = 'ALAM'
     cookie, crumb = getYahooCookie()
-    q = YahooQuote(cookie, crumb, 'HENGYUAN', stock_code, S.ABS_START)
-    print q                                          # print it out
+    sfile = (S.WORK_DIR + S.market_source + '/' + stock_name + '.' +
+             stock_code + '.csv')
+    q = YahooQuote(cookie, crumb, stock_name, stock_code, S.ABS_START)
+    q.write_csv(sfile)
+#   print q                                          # print it out
 #   q = YahooQuote('aapl','2011-01-01')              # download year to date Apple data
 #   print q                                          # print it out
 #   q = YahooQuote('orcl','2011-02-01','2011-02-28') # download Oracle data for February 2011

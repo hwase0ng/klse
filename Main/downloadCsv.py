@@ -91,6 +91,7 @@ with open(S.WORK_DIR + S.market_file, 'r') as f:
                 else:
                     q = YahooQuote(cookie, crumb, stock_name, stock_code, start, end)
                 if len(q.getCsvErr()) > 0:
+                    OK = False
                     st_code, st_reason = q.getCsvErr().split(":")
                     if S.INF_YAHOO:
                         print "INF:", st_code, ":", stock_name
