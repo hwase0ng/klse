@@ -22,6 +22,7 @@ import calendar
 from datetime import datetime, date
 import requests
 import re
+from Utils.dateutils import getToday, getTomorrow
 
 
 def getYahooCookie():
@@ -239,14 +240,15 @@ class YahooQuote(Quote):
 
 
 if __name__ == '__main__':
-    stock_code = '5115.KL'
-    stock_name = 'ALAM'
+    stock_code = '5279.KL'
+    stock_name = 'SERBA'
     cookie, crumb = getYahooCookie()
     sfile = (S.WORK_DIR + S.market_source + '/' + stock_name + '.' +
              stock_code + '.csv')
-    q = YahooQuote(cookie, crumb, stock_name, stock_code, S.ABS_START)
-    q.write_csv(sfile)
-#   print q                                          # print it out
+    q = YahooQuote(cookie, crumb, stock_name, stock_code,
+                   getToday("%Y-%m-%d"), getTomorrow("%Y-%m-%d"))
+#   q.write_csv(sfile)
+    print q                                          # print it out
 #   q = YahooQuote('aapl','2011-01-01')              # download year to date Apple data
 #   print q                                          # print it out
 #   q = YahooQuote('orcl','2011-02-01','2011-02-28') # download Oracle data for February 2011

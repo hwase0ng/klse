@@ -9,7 +9,7 @@ import Main.settings as S
 from datetime import datetime
 from Download.google import GoogleQuote
 from Download.yahoo import YahooQuote, getYahooCookie
-from Utils.dateutils import getStartDate
+from Utils.dateutils import getStartDate, getTomorrow
 
 import sys
 import csv
@@ -19,7 +19,8 @@ import re
 
 lastcsv = S.WORK_DIR + 'lastcsv.txt'
 # Specify Date Range
-end = datetime.today().strftime("%Y-%m-%d")
+# end = datetime.today().strftime("%Y-%m-%d")
+end = getTomorrow("%Y-%m-%d")
 # end = '2006-01-01'
 if os.path.exists(lastcsv):
     with open(lastcsv, 'r') as f:
