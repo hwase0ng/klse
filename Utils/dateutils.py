@@ -73,7 +73,7 @@ def getStartDate(fn):
         return ''
     else:
         t2 = t[0].split(",")
-        lastdt = t2[0]
+        lastdt = t2[1]
         nextdt = getNextDay(lastdt)
         return nextdt
 

@@ -240,12 +240,13 @@ class YahooQuote(Quote):
 
 
 if __name__ == '__main__':
-    stock_code = '5279.KL'
-    stock_name = 'SERBA'
+    stock_code = '5099.KL'
+    stock_name = 'AIRASIA'
     cookie, crumb = getYahooCookie()
     sfile = (S.WORK_DIR + S.market_source + '/' + stock_name + '.' +
              stock_code + '.csv')
     q = YahooQuote(cookie, crumb, stock_name, stock_code,
+#                  "2007-01-01", getTomorrow("%Y-%m-%d"))
                    getToday("%Y-%m-%d"), getTomorrow("%Y-%m-%d"))
 #   q.write_csv(sfile)
     print q                                          # print it out

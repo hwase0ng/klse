@@ -7,6 +7,7 @@ from Main import settings as S
 from datetime import datetime
 import mmap
 import openpyxl
+import os
 import subprocess
 import xlrd
 
@@ -49,6 +50,25 @@ def tail(fl, n=1, bs=1024):
         if S.DBG_ALL:
             print "tail has failed on ", fl
         return [""]
+
+
+def concat2quotes(directory):
+    with cd(directory):
+        if S.DBG_ALL:
+            print os.getcwd()
+        os.system("del quotes.csv")
+        os.system("type *.csv >> quotes.txt")
+        os.system("ren quotes.txt quotes.csv")
+        cmd = "copy quotes.csv {0}".format(S.WORK_DIR_MT4).replace('/', '\\')
+        if S.DBG_ALL:
+            print cmd
+        os.system(cmd)
+    '''
+    with open('output_file.txt','w') as wfd:
+    for f in ['seg1.txt','seg2.txt','seg3.txt']:
+        with open(f,'rb') as fd:
+            shutil.copyfileobj(fd, wfd, 1024*1024*10)
+    '''
 
 
 def xls_to_xlsx(*args, **kw):
@@ -96,5 +116,21 @@ def xls_to_xlsx(*args, **kw):
     return book_xlsx
 
 
+class cd:
+    """Context manager for changing the current working directory"""
+    def __init__(self, newPath):
+        self.newPath = os.path.expanduser(newPath)
+
+    def __enter__(self):
+        self.savedPath = os.getcwd()
+        os.chdir(self.newPath)
+
+    def __exit__(self, etype, value, traceback):
+        os.chdir(self.savedPath)
+
+
 if __name__ == '__main__':
+    concat2quotes(S.WORK_DIR + S.market_source)
+    with cd(S.WORK_DIR_MT4):
+        os.system("perl mt4dw.pl")
     pass
