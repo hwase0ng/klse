@@ -243,12 +243,14 @@ if __name__ == '__main__':
     stock_code = '5099.KL'
     stock_name = 'AIRASIA'
     cookie, crumb = getYahooCookie()
-    sfile = (S.WORK_DIR + S.market_source + '/' + stock_name + '.' +
+    sfile = (S.WORK_DIR + S.MARKET_SOURCE + '/' + stock_name + '.' +
              stock_code + '.csv')
     q = YahooQuote(cookie, crumb, stock_name, stock_code,
-#                  "2007-01-01", getTomorrow("%Y-%m-%d"))
+                   #  "2007-01-01", getTomorrow("%Y-%m-%d"))
                    getToday("%Y-%m-%d"), getTomorrow("%Y-%m-%d"))
-#   q.write_csv(sfile)
+    writeCsv = False
+    if writeCsv:
+        q.write_csv(sfile)
     print q                                          # print it out
 #   q = YahooQuote('aapl','2011-01-01')              # download year to date Apple data
 #   print q                                          # print it out

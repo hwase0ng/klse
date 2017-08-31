@@ -8,8 +8,8 @@ Created on Dec 26, 2016
 WORK_DIR = 'A:/Projects/EDS/klse/'
 WORK_DIR_MT4 = 'C:/Users/hwase/AppData/Roaming/MetaQuotes/Terminal/E4917DDDC31BA9195FE779C754D5D6C5/history/KLSE'
 WORK_DIR_WIN = 'A:\\Projects\\EDS\\klse\\'
-market_source = 'yahoo'  # or 'google'
-market_file = 'klse.txt'
+MARKET_SOURCE = 'yahoo'  # or 'google'
+MARKET_FILE = 'klse.txt'
 ABS_START = '2007-01-01'
 
 # Features toggle

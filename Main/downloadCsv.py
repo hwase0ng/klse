@@ -43,13 +43,9 @@ def get_start_end_obsoleted():
     '''
 
 
-def download(end, cookie, crumb):
-    #gDict = {}
-    errlist = []
-    q = ''
-
-    print "Downloading from " + S.market_source + " with " + S.WORK_DIR + S.market_file
-    with open(S.WORK_DIR + S.market_file, 'r') as f:
+def downloadMarket(mkt, cookie, crumb):
+    print "Downloading from " + S.MARKET_SOURCE + " with " + S.WORK_DIR + mkt
+    with open(S.WORK_DIR + S.MARKET_FILE, 'r') as f:
         reader = csv.reader(f)
         slist = list(reader)
         if S.DBG_ALL:
@@ -65,86 +61,102 @@ def download(end, cookie, crumb):
             stock_code = counter[1]
             if S.DBG_ALL:
                 print stock_name, stock_symbol, stock_code
-            sfile = (S.WORK_DIR + S.market_source + '/' + stock_name + '.' +
+            sfile = (S.WORK_DIR + S.MARKET_SOURCE + '/' + stock_name + '.' +
                      stock_code + '.csv')
-            stmp = sfile + 'tmp'
-            OK = True
-            try:
-                if S.RESUME_FILE:
-                    start = getStartDate(sfile)
-                    if S.INF_YAHOO:
-                        print 'Start={0}, End={1}'.format(start, end)
-                else:
-                    start = S.ABS_START
-                if S.DBG_ALL:
-                    print "\t" + start + "..." + sfile
-                if len(start) == 0:
-                    start = S.ABS_START
-                elif len(start) > 10:
-                    errstr = stock_name + ":" + start
-                    print '  ERR1:', errstr
-                    OK = False
-                    errlist.append([errstr])
-                    start = ""
-                elif start >= end:
-                    if S.DBG_ALL:
-                        print "\t" + stock_name + " skipped"
-                    start = ""
-                if S.DBG_ALL:
-                    print "\tDates=" + start + "," + end
-                if len(start) > 0:
-                    if S.market_source == 'google':
-                        q = GoogleQuote(stock_name, start, end)
-                    else:
-                        q = YahooQuote(cookie, crumb, stock_name, stock_code, start, end)
-                    if len(q.getCsvErr()) > 0:
-                        OK = False
-                        st_code, st_reason = q.getCsvErr().split(":")
-                        if S.INF_YAHOO:
-                            print "INF:", st_code, ":", stock_name
-                        if int(st_code) == 401:  # Unauthorized
-                            if S.DBG_YAHOO:
-                                print "DBG:get new cookie, st_code=", st_code
-                            cookie, crumb = getYahooCookie()
-                    else:
-                        #  gDict[stock_name] = q.url
-                        q.write_csv(stmp)
-                else:
-                    OK = False
-            except Exception, e:
-                print '  ERR2:', stock_code + ":" + stock_name + ":" + str(e)
-                if S.DBG_ALL:
-                    print q.getCsvErr()
-                OK = False
-                errlist.append([stock_name])
+            download_from_source(sfile, stock_name, stock_code)
 
-            if OK:
-                if start == S.ABS_START:
-                    f = open(sfile, "w")
-                else:
-                    f = open(sfile, "a+")
-                ftmp = open(stmp, "r")
-                f.write(ftmp.read())
-                f.close()
-                ftmp.close()
+
+def download_from_source(fname, stock_name, stock_code, end=getTomorrow("%Y-%m-%d")):
+    #  gDict = {}
+    errlist = []
+    q = ''
+
+    stmp = fname + 'tmp'
+    OK = True
+    try:
+        if S.RESUME_FILE:
+            start = getStartDate(fname)
+            if S.INF_YAHOO:
+                print 'Start={0}, End={1}'.format(start, end)
+        else:
+            start = S.ABS_START
+        if S.DBG_ALL:
+            print "\t" + start + "..." + fname
+        if len(start) == 0:
+            start = S.ABS_START
+        elif len(start) > 10:
+            errstr = stock_name + ":" + start
+            print '  ERR1:', errstr
+            OK = False
+            errlist.append([errstr])
+            start = ""
+        elif start >= end:
+            if S.DBG_ALL:
+                print "\t" + stock_name + " skipped"
+            start = ""
+        if S.DBG_ALL:
+            print "\tDates=" + start + "," + end
+        if len(start) > 0:
+            if S.MARKET_SOURCE == 'google':
+                q = GoogleQuote(stock_name, start, end)
+            else:
+                q = YahooQuote(cookie, crumb, stock_name, stock_code, start, end)
+            if len(q.getCsvErr()) > 0:
+                OK = False
+                st_code, st_reason = q.getCsvErr().split(":")
+                if S.INF_YAHOO:
+                    print "INF:", st_code, ":", stock_name
+                if int(st_code) == 401:  # Unauthorized
+                    if S.DBG_YAHOO:
+                        print "DBG:get new cookie, st_code=", st_code
+                    cookie, crumb = getYahooCookie()
+            else:
+                #  gDict[stock_name] = q.url
+                q.write_csv(stmp)
+        else:
+            OK = False
+    except Exception, e:
+        print '  ERR2:', stock_code + ":" + stock_name + ":" + str(e)
+        if S.DBG_ALL:
+            print q.getCsvErr()
+        OK = False
+        errlist.append([stock_name])
+
+    if OK:
+        if start == S.ABS_START:
+            f = open(fname, "w")
+        else:
+            f = open(fname, "a+")
+        ftmp = open(stmp, "r")
+        f.write(ftmp.read())
+        f.close()
+        ftmp.close()
     '''
     with open(lastcsv, 'w+') as f:
-        f.write(end)
-        f.close()
+    f.write(end)
+    f.close()
     '''
 
     '''
     if len(errlist)>0:
-        print "Error counters:"
-        for i in errlist:
-            print '\t',i
+    print "Error counters:"
+    for i in errlist:
+        print '\t',i
     '''
 
 
 if __name__ == '__main__':
     cookie, crumb = getYahooCookie()
-    download(getTomorrow("%Y-%m-%d"), cookie, crumb)
-    concat2quotes(S.WORK_DIR + S.market_source)
+    market_file = S.MARKET_FILE
+    stock_code = ''
+    stock_name = ''
+    if len(stock_code > 0):
+        sfile = (S.WORK_DIR + S.MARKET_SOURCE + '/' + stock_name + '.' +
+                 stock_code + '.csv')
+        download_from_source(sfile, stock_name, stock_code)
+    else:
+        downloadMarket(market_file, cookie, crumb)
+    concat2quotes(S.WORK_DIR + S.MARKET_SOURCE)
     with cd(S.WORK_DIR_MT4):
         os.system("perl mt4dw.pl")
     print "Done."
