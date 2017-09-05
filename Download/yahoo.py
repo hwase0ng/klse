@@ -22,7 +22,7 @@ import calendar
 from datetime import datetime, date
 import requests
 import re
-from Utils.dateutils import getToday, getTomorrow
+from Utils.dateutils import getToday, getTomorrow, getYesterday
 
 
 def getYahooCookie():
@@ -247,6 +247,7 @@ if __name__ == '__main__':
              stock_code + '.csv')
     q = YahooQuote(cookie, crumb, stock_name, stock_code,
                    #  "2007-01-01", getTomorrow("%Y-%m-%d"))
+                   #  getYesterday("%Y-%m-%d"), getTomorrow("%Y-%m-%d"))
                    getToday("%Y-%m-%d"), getTomorrow("%Y-%m-%d"))
     writeCsv = False
     if writeCsv:

@@ -63,10 +63,10 @@ def downloadMarket(mkt, cookie, crumb):
                 print stock_name, stock_symbol, stock_code
             sfile = (S.WORK_DIR + S.MARKET_SOURCE + '/' + stock_name + '.' +
                      stock_code + '.csv')
-            download_from_source(sfile, stock_name, stock_code)
+            download_from_source(cookie, crumb, sfile, stock_name, stock_code)
 
 
-def download_from_source(fname, stock_name, stock_code, end=getTomorrow("%Y-%m-%d")):
+def download_from_source(cookie, crumb, fname, stock_name, stock_code, end=getTomorrow("%Y-%m-%d")):
     #  gDict = {}
     errlist = []
     q = ''
@@ -77,7 +77,7 @@ def download_from_source(fname, stock_name, stock_code, end=getTomorrow("%Y-%m-%
         if S.RESUME_FILE:
             start = getStartDate(fname)
             if S.INF_YAHOO:
-                print 'Start={0}, End={1}'.format(start, end)
+                print '{0}: Start={1}, End={2}'.format(stock_name, start, end)
         else:
             start = S.ABS_START
         if S.DBG_ALL:
@@ -105,10 +105,10 @@ def download_from_source(fname, stock_name, stock_code, end=getTomorrow("%Y-%m-%
                 OK = False
                 st_code, st_reason = q.getCsvErr().split(":")
                 if S.INF_YAHOO:
-                    print "INF:", st_code, ":", stock_name
+                    print "INF:", st_code, st_reason, ":", stock_name
                 if int(st_code) == 401:  # Unauthorized
                     if S.DBG_YAHOO:
-                        print "DBG:get new cookie, st_code=", st_code
+                        print "DBG:new cookie required, st_code =", st_code, st_reason
                     cookie, crumb = getYahooCookie()
             else:
                 #  gDict[stock_name] = q.url
@@ -150,14 +150,16 @@ if __name__ == '__main__':
     market_file = S.MARKET_FILE
     stock_code = ''
     stock_name = ''
-    if len(stock_code > 0):
+    if len(stock_code) > 0:
+        #  download only selected counter
         sfile = (S.WORK_DIR + S.MARKET_SOURCE + '/' + stock_name + '.' +
                  stock_code + '.csv')
-        download_from_source(sfile, stock_name, stock_code)
+        download_from_source(cookie, crumb, sfile, stock_name, stock_code)
     else:
+        #  download all counters found in the market file
         downloadMarket(market_file, cookie, crumb)
-    concat2quotes(S.WORK_DIR + S.MARKET_SOURCE)
-    with cd(S.WORK_DIR_MT4):
-        os.system("perl mt4dw.pl")
+        concat2quotes(S.WORK_DIR + S.MARKET_SOURCE)
+        with cd(S.WORK_DIR_MT4):
+            os.system("perl mt4dw.pl")
     print "Done."
     pass
