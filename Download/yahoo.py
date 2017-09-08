@@ -23,6 +23,7 @@ from datetime import datetime, date
 import requests
 import re
 from Utils.dateutils import getToday, getTomorrow, getYesterday
+import csv
 
 
 def getYahooCookie():
@@ -64,6 +65,8 @@ class Quote(object):
         self.date, self.open_, self.high, self.low, self.close, self.volume = (
             [] for _ in range(6))
         self.csverr = ''
+        self.lastdate = ''
+        self.lastcsv = ''
 #       self.cookie,self.crumb = self.getYahooCookie()
 
     def getCsvErr(self):
@@ -189,8 +192,20 @@ class YahooQuote(Quote):
                     csv.rstrip().split(','))
                 if S.DBG_YAHOO:
                     print "DBG:", ds, open_, high, low, close, adjc, volume
-#                   print "DBG:", type(ds), type(open_), type(high), type(low),
-#                   type(close), type(adjc), type(volume)
+                    #  print "DBG:", type(ds), type(open_), type(high), type(low),
+                    #  type(close), type(adjc), type(volume)
+                if float(volume) <= 0:
+                    if S.DBG_YAHOO:
+                        print 'DBG:Skipped 0 volume as a result of non-trading day:', ds
+                    continue
+                if ds == self.lastdate:
+                    if S.INF_YAHOO:
+                        print "INF:duplicated date:", sname, ds
+                        print '\tcsv:', csv
+                        print '\tlst:', self.lastcsv
+                    continue
+                self.lastdate = ds
+                self.lastcsv = csv
                 '''
                 if not isnumberlist([high, low, close, adjc]):
                     if S.DBG_YAHOO:

@@ -130,7 +130,7 @@ class cd:
 
 
 if __name__ == '__main__':
-    concat2quotes(S.WORK_DIR + S.market_source)
+    concat2quotes(S.WORK_DIR + S.MARKET_SOURCE)
     with cd(S.WORK_DIR_MT4):
         os.system("perl mt4dw.pl")
     pass

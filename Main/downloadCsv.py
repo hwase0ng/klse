@@ -124,9 +124,9 @@ def download_from_source(cookie, crumb, fname, stock_name, stock_code, end=getTo
 
     if OK:
         if start == S.ABS_START:
-            f = open(fname, "w")
+            f = open(fname, "wb")
         else:
-            f = open(fname, "a+")
+            f = open(fname, "ab")
         ftmp = open(stmp, "r")
         f.write(ftmp.read())
         f.close()
