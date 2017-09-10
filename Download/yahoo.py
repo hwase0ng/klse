@@ -57,7 +57,7 @@ class Quote(object):
     DATE_FMT = '%Y-%m-%d'
     TIME_FMT = '%H:%M:%S'
 
-    def __init__(self):
+    def __init__(self, start_date):
         self.url = ''
         self.symbol = ''
         self.sname = ''
@@ -65,7 +65,7 @@ class Quote(object):
         self.date, self.open_, self.high, self.low, self.close, self.volume = (
             [] for _ in range(6))
         self.csverr = ''
-        self.lastdate = ''
+        self.lastdate = start_date
         self.lastcsv = ''
 #       self.cookie,self.crumb = self.getYahooCookie()
 
@@ -152,7 +152,7 @@ class YahooQuote(Quote):
     ''' Daily quotes from Yahoo. Date format='yyyy-mm-dd' '''
     def __init__(self, cookie, crumb, sname, symbol, start_date,
                  end_date=date.today().isoformat()):
-        super(YahooQuote, self).__init__()
+        super(YahooQuote, self).__init__(start_date)
         self.sname = sname.upper()
         self.symbol = symbol.upper()
         if S.DBG_ALL or S.DBG_YAHOO:
@@ -194,13 +194,23 @@ class YahooQuote(Quote):
                     print "DBG:", ds, open_, high, low, close, adjc, volume
                     #  print "DBG:", type(ds), type(open_), type(high), type(low),
                     #  type(close), type(adjc), type(volume)
+
+                #  Start of data validation
                 if float(volume) <= 0:
                     if S.DBG_YAHOO:
                         print 'DBG:Skipped 0 volume as a result of non-trading day:', ds
                     continue
+                if ds < start_date:
+                    if S.DBG_YAHOO:
+                        print "DBG:Skipped older date:", ds
+                    continue
+                if ds > getToday("%Y-%m-%d"):
+                    if S.DBG_YAHOO:
+                        print "DBG:Skipped future dividends:", ds
+                    continue
                 if ds == self.lastdate:
                     if S.INF_YAHOO:
-                        print "INF:duplicated date:", sname, ds
+                        print "INF:Skipped duplicated date:", sname, ds
                         print '\tcsv:', csv
                         print '\tlst:', self.lastcsv
                     continue

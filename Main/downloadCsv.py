@@ -63,16 +63,20 @@ def downloadMarket(mkt, cookie, crumb):
                 print stock_name, stock_symbol, stock_code
             sfile = (S.WORK_DIR + S.MARKET_SOURCE + '/' + stock_name + '.' +
                      stock_code + '.csv')
-            download_from_source(cookie, crumb, sfile, stock_name, stock_code)
+            rtncd = download_from_source(cookie, crumb, sfile, stock_name, stock_code)
+            if rtncd > 0:  # 401 = Unauthorized
+                if S.DBG_YAHOO:
+                    print "DBG:new cookie required, st_code =", rtncd
+                cookie, crumb = getYahooCookie()
 
 
 def download_from_source(cookie, crumb, fname, stock_name, stock_code, end=getTomorrow("%Y-%m-%d")):
     #  gDict = {}
     errlist = []
     q = ''
+    rtn_code = 0
 
     stmp = fname + 'tmp'
-    OK = True
     try:
         if S.RESUME_FILE:
             start = getStartDate(fname)
@@ -87,7 +91,7 @@ def download_from_source(cookie, crumb, fname, stock_name, stock_code, end=getTo
         elif len(start) > 10:
             errstr = stock_name + ":" + start
             print '  ERR1:', errstr
-            OK = False
+            rtn_code = -1
             errlist.append([errstr])
             start = ""
         elif start >= end:
@@ -102,27 +106,23 @@ def download_from_source(cookie, crumb, fname, stock_name, stock_code, end=getTo
             else:
                 q = YahooQuote(cookie, crumb, stock_name, stock_code, start, end)
             if len(q.getCsvErr()) > 0:
-                OK = False
                 st_code, st_reason = q.getCsvErr().split(":")
+                rtn_code = int(st_code)
                 if S.INF_YAHOO:
                     print "INF:", st_code, st_reason, ":", stock_name
-                if int(st_code) == 401:  # Unauthorized
-                    if S.DBG_YAHOO:
-                        print "DBG:new cookie required, st_code =", st_code, st_reason
-                    cookie, crumb = getYahooCookie()
             else:
                 #  gDict[stock_name] = q.url
                 q.write_csv(stmp)
         else:
-            OK = False
+            rtn_code = -2
     except Exception, e:
         print '  ERR2:', stock_code + ":" + stock_name + ":" + str(e)
         if S.DBG_ALL:
             print q.getCsvErr()
-        OK = False
+        rtn_code = -3
         errlist.append([stock_name])
 
-    if OK:
+    if rtn_code == 0:
         if start == S.ABS_START:
             f = open(fname, "wb")
         else:
@@ -131,6 +131,7 @@ def download_from_source(cookie, crumb, fname, stock_name, stock_code, end=getTo
         f.write(ftmp.read())
         f.close()
         ftmp.close()
+    return rtn_code
     '''
     with open(lastcsv, 'w+') as f:
     f.write(end)
