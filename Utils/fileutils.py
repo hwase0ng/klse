@@ -52,14 +52,21 @@ def tail(fl, n=1, bs=1024):
         return [""]
 
 
-def concat2quotes(directory):
+def getIP():
+    ip = os.system("ipconfig | grep IPv4 | awk '{print $NF}'")
+#   ip = os.system("ipconfig | grep IPv4 | awk '{print $NF}' | awk -F. '{print $NF}'")
+    print type(ip)
+    return str(ip)
+
+
+def concat2quotes(directory, target):
     with cd(directory):
         if S.DBG_ALL:
             print os.getcwd()
         os.system("del quotes.csv")
         os.system("type *.csv >> quotes.txt")
         os.system("ren quotes.txt quotes.csv")
-        cmd = "copy quotes.csv {0}".format(S.WORK_DIR_MT4).replace('/', '\\')
+        cmd = "copy quotes.csv {0}".format(target).replace('/', '\\')
         if S.DBG_ALL:
             print cmd
         os.system(cmd)
@@ -130,7 +137,11 @@ class cd:
 
 
 if __name__ == '__main__':
-    concat2quotes(S.WORK_DIR + S.MARKET_SOURCE)
+    if getIP().endswith(".2"):
+        S.WORK_DIR_MT4 = S.WORK_DIR_MT4_2
+    else:
+        S.WORK_DIR_MT4 = S.WORK_DIR_MT4_10
+    concat2quotes(S.WORK_DIR + S.MARKET_SOURCE, S.WORK_DIR_MT4)
     with cd(S.WORK_DIR_MT4):
         os.system("perl mt4dw.pl")
     pass

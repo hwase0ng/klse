@@ -10,7 +10,7 @@ from datetime import datetime
 from Download.google import GoogleQuote
 from Download.yahoo import YahooQuote, getYahooCookie
 from Utils.dateutils import getStartDate, getTomorrow
-from Utils.fileutils import concat2quotes, cd
+from Utils.fileutils import concat2quotes, cd, getIP
 
 import sys
 import csv
@@ -63,11 +63,16 @@ def downloadMarket(mkt, cookie, crumb):
                 print stock_name, stock_symbol, stock_code
             sfile = (S.WORK_DIR + S.MARKET_SOURCE + '/' + stock_name + '.' +
                      stock_code + '.csv')
-            rtncd = download_from_source(cookie, crumb, sfile, stock_name, stock_code)
-            if rtncd > 0:  # 401 = Unauthorized
-                if S.DBG_YAHOO:
-                    print "DBG:new cookie required, st_code =", rtncd
-                cookie, crumb = getYahooCookie()
+            count = 0
+            while count < 3:
+                count = count + 1
+                rtncd = download_from_source(cookie, crumb, sfile, stock_name, stock_code)
+                if rtncd > 0:  # 401 = Unauthorized
+                    if S.DBG_YAHOO:
+                        print "DBG:new cookie required, st_code =", rtncd
+                    cookie, crumb = getYahooCookie()
+                else:
+                    count = 99
 
 
 def download_from_source(cookie, crumb, fname, stock_name, stock_code, end=getTomorrow("%Y-%m-%d")):
@@ -159,7 +164,11 @@ if __name__ == '__main__':
     else:
         #  download all counters found in the market file
         downloadMarket(market_file, cookie, crumb)
-        concat2quotes(S.WORK_DIR + S.MARKET_SOURCE)
+        if getIP().endswith(".2"):
+            S.WORK_DIR_MT4 = S.WORK_DIR_MT4_2
+        else:
+            S.WORK_DIR_MT4 = S.WORK_DIR_MT4_10
+        concat2quotes(S.WORK_DIR + S.MARKET_SOURCE, S.WORK_DIR_MT4)
         with cd(S.WORK_DIR_MT4):
             os.system("perl mt4dw.pl")
     print "Done."
