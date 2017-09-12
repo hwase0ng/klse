@@ -10,7 +10,7 @@ from datetime import datetime
 from Download.google import GoogleQuote
 from Download.yahoo import YahooQuote, getYahooCookie
 from Utils.dateutils import getStartDate, getTomorrow
-from Utils.fileutils import concat2quotes, cd, getIP
+from Utils.fileutils import concat2quotes, cd, getSystemIP
 
 import sys
 import csv
@@ -164,7 +164,8 @@ if __name__ == '__main__':
     else:
         #  download all counters found in the market file
         downloadMarket(market_file, cookie, crumb)
-        if getIP().endswith(".2"):
+        ip = getSystemIP()
+        if ip.endswith(".2"):
             S.WORK_DIR_MT4 = S.WORK_DIR_MT4_2
         else:
             S.WORK_DIR_MT4 = S.WORK_DIR_MT4_10

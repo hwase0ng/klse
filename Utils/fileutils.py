@@ -8,6 +8,7 @@ from datetime import datetime
 import mmap
 import openpyxl
 import os
+import socket
 import subprocess
 import xlrd
 
@@ -52,11 +53,11 @@ def tail(fl, n=1, bs=1024):
         return [""]
 
 
-def getIP():
-    ip = os.system("ipconfig | grep IPv4 | awk '{print $NF}'")
-#   ip = os.system("ipconfig | grep IPv4 | awk '{print $NF}' | awk -F. '{print $NF}'")
-    print type(ip)
-    return str(ip)
+def getSystemIP():
+    hostname = socket.gethostname()
+    ip = socket.gethostbyname(hostname)
+#   print type(ip), ip
+    return ip
 
 
 def concat2quotes(directory, target):
@@ -137,7 +138,9 @@ class cd:
 
 
 if __name__ == '__main__':
-    if getIP().endswith(".2"):
+    ip = getSystemIP()
+    print type(ip), ip
+    if ip.endswith(".2"):
         S.WORK_DIR_MT4 = S.WORK_DIR_MT4_2
     else:
         S.WORK_DIR_MT4 = S.WORK_DIR_MT4_10
