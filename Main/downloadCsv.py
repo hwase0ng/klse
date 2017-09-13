@@ -9,7 +9,7 @@ import Main.settings as S
 from datetime import datetime
 from Download.google import GoogleQuote
 from Download.yahoo import YahooQuote, getYahooCookie
-from Utils.dateutils import getStartDate, getTomorrow
+from Utils.dateutils import getLastDate, getTomorrow
 from Utils.fileutils import concat2quotes, cd, getSystemIP
 
 import sys
@@ -67,7 +67,7 @@ def downloadMarket(mkt, cookie, crumb):
             while count < 3:
                 count = count + 1
                 rtncd = download_from_source(cookie, crumb, sfile, stock_name, stock_code)
-                if rtncd > 0:  # 401 = Unauthorized
+                if rtncd > 0:  # 400, Bad Request, 401 = Unauthorized
                     if S.DBG_YAHOO:
                         print "DBG:new cookie required, st_code =", rtncd
                     cookie, crumb = getYahooCookie()
@@ -84,32 +84,32 @@ def download_from_source(cookie, crumb, fname, stock_name, stock_code, end=getTo
     stmp = fname + 'tmp'
     try:
         if S.RESUME_FILE:
-            start = getStartDate(fname)
+            lastdt = getLastDate(fname)
             if S.INF_YAHOO:
-                print '{0}: Start={1}, End={2}'.format(stock_name, start, end)
+                print '{0}: lastdt={1}, End={2}'.format(stock_name, lastdt, end)
         else:
-            start = S.ABS_START
+            lastdt = S.ABS_START
         if S.DBG_ALL:
-            print "\t" + start + "..." + fname
-        if len(start) == 0:
-            start = S.ABS_START
-        elif len(start) > 10:
-            errstr = stock_name + ":" + start
+            print "\t" + lastdt + "..." + fname
+        if len(lastdt) == 0:
+            lastdt = S.ABS_START
+        elif len(lastdt) > 10:
+            errstr = stock_name + ":" + lastdt
             print '  ERR1:', errstr
             rtn_code = -1
             errlist.append([errstr])
-            start = ""
-        elif start >= end:
+            lastdt = ""
+        elif lastdt >= end:
             if S.DBG_ALL:
                 print "\t" + stock_name + " skipped"
-            start = ""
+            lastdt = ""
         if S.DBG_ALL:
-            print "\tDates=" + start + "," + end
-        if len(start) > 0:
+            print "\tDates=" + lastdt + "," + end
+        if len(lastdt) > 0:
             if S.MARKET_SOURCE == 'google':
-                q = GoogleQuote(stock_name, start, end)
+                q = GoogleQuote(stock_name, lastdt, end)
             else:
-                q = YahooQuote(cookie, crumb, stock_name, stock_code, start, end)
+                q = YahooQuote(cookie, crumb, stock_name, stock_code, lastdt, end)
             if len(q.getCsvErr()) > 0:
                 st_code, st_reason = q.getCsvErr().split(":")
                 rtn_code = int(st_code)
@@ -128,7 +128,7 @@ def download_from_source(cookie, crumb, fname, stock_name, stock_code, end=getTo
         errlist.append([stock_name])
 
     if rtn_code == 0:
-        if start == S.ABS_START:
+        if lastdt == S.ABS_START:
             f = open(fname, "wb")
         else:
             f = open(fname, "ab")

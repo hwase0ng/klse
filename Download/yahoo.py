@@ -22,8 +22,9 @@ import calendar
 from datetime import datetime, date
 import requests
 import re
-from Utils.dateutils import getToday, getTomorrow, getYesterday
+from Utils.dateutils import getToday, getTomorrow, getYesterday, getNextDay
 import csv
+from Main.settings import DBG_YAHOO
 
 
 def getYahooCookie():
@@ -57,7 +58,7 @@ class Quote(object):
     DATE_FMT = '%Y-%m-%d'
     TIME_FMT = '%H:%M:%S'
 
-    def __init__(self, start_date):
+    def __init__(self, lastdt):
         self.url = ''
         self.symbol = ''
         self.sname = ''
@@ -65,7 +66,7 @@ class Quote(object):
         self.date, self.open_, self.high, self.low, self.close, self.volume = (
             [] for _ in range(6))
         self.csverr = ''
-        self.lastdate = start_date
+        self.lastdate = lastdt
         self.lastcsv = ''
 #       self.cookie,self.crumb = self.getYahooCookie()
 
@@ -150,14 +151,20 @@ class Quote(object):
 
 class YahooQuote(Quote):
     ''' Daily quotes from Yahoo. Date format='yyyy-mm-dd' '''
-    def __init__(self, cookie, crumb, sname, symbol, start_date,
+    def __init__(self, cookie, crumb, sname, symbol, last_date,
                  end_date=date.today().isoformat()):
-        super(YahooQuote, self).__init__(start_date)
+        super(YahooQuote, self).__init__(last_date)
         self.sname = sname.upper()
         self.symbol = symbol.upper()
+        if last_date == getToday("%Y-%m-%d"):
+            #  Will get 400 Bad Request
+            if DBG_YAHOO:
+                print "DBG:Skipped downloaded", last_date
+            return None
+        start_date = getNextDay(last_date)
         if S.DBG_ALL or S.DBG_YAHOO:
-            print "DBG:YahooQuote:1:", symbol, self.symbol, start_date
-#       self.url = self.formUrl_old(symbol,start_date,end_date)
+            print "DBG:YahooQuote:1:", symbol, self.symbol, last_date, start_date
+#       self.url = self.formUrl_old(symbol,last_date,end_date)
         self.url = self.formUrl(crumb, symbol, start_date, end_date)
         if S.DBG_ALL or S.DBG_YAHOO:
             print "DBG:YahooQuote:2:", self.url
@@ -272,7 +279,6 @@ if __name__ == '__main__':
              stock_code + '.csv')
     q = YahooQuote(cookie, crumb, stock_name, stock_code,
                    #  "2007-01-01", getTomorrow("%Y-%m-%d"))
-                   #  getYesterday("%Y-%m-%d"), getTomorrow("%Y-%m-%d"))
                    getToday("%Y-%m-%d"), getTomorrow("%Y-%m-%d"))
     writeCsv = False
     if writeCsv:

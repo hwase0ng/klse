@@ -18,5 +18,5 @@ ABS_START = '2007-01-01'
 DBG_ALL = False
 DBG_YAHOO = False
 INF_YAHOO = True
-RESUME_FILE = False  # False = fresh reload from ABS_START date, True = only download from next date of last record
+RESUME_FILE = True  # False = fresh reload from ABS_START date, True = only download from next date of last record
 PRICE_WITHOUT_SPLIT = True  # False - Apply adjusted close by default

@@ -67,15 +67,18 @@ def getNextDay(pdate):
     return nextday
 
 
-def getStartDate(fn):
+def getLastDate(fn):
     t = tail(fn)
     if len(t[0]) == 0:
         return ''
     else:
         t2 = t[0].split(",")
         lastdt = t2[1]
+        return lastdt
+        '''
         nextdt = getNextDay(lastdt)
         return nextdt
+        '''
 
 
 def getToday(fm="%Y%m%d"):
