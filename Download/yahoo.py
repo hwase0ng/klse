@@ -24,7 +24,6 @@ import requests
 import re
 from Utils.dateutils import getToday, getTomorrow, getYesterday, getNextDay
 import csv
-from Main.settings import DBG_YAHOO
 
 
 def getYahooCookie():
@@ -158,7 +157,7 @@ class YahooQuote(Quote):
         self.symbol = symbol.upper()
         if last_date == getToday("%Y-%m-%d"):
             #  Will get 400 Bad Request
-            if DBG_YAHOO:
+            if S.DBG_YAHOO:
                 print "DBG:Skipped downloaded", last_date
             return None
         start_date = getNextDay(last_date)

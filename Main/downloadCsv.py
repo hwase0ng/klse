@@ -17,6 +17,7 @@ import csv
 import os.path
 import requests
 import re
+from Main.settings import RESUME_FILE
 
 
 def get_start_end_obsoleted():
@@ -52,9 +53,9 @@ def downloadMarket(mkt, cookie, crumb):
             print slist[:3]
         for counter in slist[:]:
             if S.DBG_ALL:
-                print "\t" + counter
+                print "\t", counter
             if len(counter) <= 0:
-                print "\t" + "Wrong len=" + len(counter)
+                print "\t" + "Wrong len=", len(counter)
                 continue
             stock_symbol = counter[0].split('.')
             stock_name = stock_symbol[0]
@@ -106,8 +107,9 @@ def download_from_source(cookie, crumb, fname, stock_name, stock_code, end=getTo
         if S.DBG_ALL:
             print "\tDates=" + lastdt + "," + end
         if len(lastdt) > 0:
-            if S.MARKET_SOURCE == 'google':
-                q = GoogleQuote(stock_name, lastdt, end)
+            if S.MARKET_SOURCE == 'google' or (
+                    RESUME_FILE is False and stock_name == 'ICAP'):
+                q = GoogleQuote(stock_name, stock_code, lastdt, end)
             else:
                 q = YahooQuote(cookie, crumb, stock_name, stock_code, lastdt, end)
             if len(q.getCsvErr()) > 0:
@@ -154,13 +156,25 @@ def download_from_source(cookie, crumb, fname, stock_name, stock_code, end=getTo
 if __name__ == '__main__':
     cookie, crumb = getYahooCookie()
     market_file = S.MARKET_FILE
-    stock_code = ''
-    stock_name = ''
-    if len(stock_code) > 0:
-        #  download only selected counter
-        sfile = (S.WORK_DIR + S.MARKET_SOURCE + '/' + stock_name + '.' +
-                 stock_code + '.csv')
-        download_from_source(cookie, crumb, sfile, stock_name, stock_code)
+    stocks = 'NAKA.7002.KL.csv,GNB.0045.KL.csv,XIANLNG.7121.KL.csv,KPOWER.7130.KL.csv,SKBSHUT.7115.KL.csv,ICAP.5108.KL.csv,SERBADK.5279.KL.csv,MALPAC.4936.KL.csv,MESB.7234.KL.csv,UMWOG.5243.KL.csv,PLABS.0171.KL.csv,BIPORT.5032.KL.csv,TROP.5401.KL.csv,DELEUM.5132.KL.csv,EUPE.6815.KL.csv,TALIWRK.8524.KL.csv,MCT.5182.KL.csv,CNI.5104.KL.csv,AMTEL.7031.KL.csv,TURBO.5167.KL.csv,RVIEW.2542.KL.csv,PINEAPP.0006.KL.csv,AMTEK.7051.KL.csv,AFUJIYA.5198.KL.csv,Y&G.7003.KL.csv,MILUX.7935.KL.csv,QUALITY.7544.KL.csv,SJC.9431.KL.csv,TGL.9369.KL.csv,ASIABRN.7722.KL.csv,TAHPS.2305.KL.csv,NPC.5047.KL.csv,CFM.8044.KL.csv,HUBLINE.7013.KL.csv,COMPUGT.5037.KL.csv,YEELEE.5584.KL.csv,HUAAN.2739.KL.csv,TEXCYCL.0089.KL.csv,EAH.0154.KL.csv,PCHEM.5183.KL.csv,PICORP.7201.KL.csv,HARTA.5168.KL.csv,LAYHONG.9385.KL.csv,GBH.3611.KL.csv,EDGENTA.1368.KL.csv,MISC.3816.KL.csv,TDEX.0132.KL.csv,DOMINAN.7169.KL.csv,GOB.1147.KL.csv,MCLEAN.0167.KL.csv,BDB.6173.KL.csv,UMCCA.2593.KL.csv,BJLAND.4219.KL.csv,ASB.1481.KL.csv,DPS.7198.KL.csv,KIMHIN.5371.KL.csv,ECM.2143.KL.csv,WANGZNG.7203.KL.csv,OMESTI.9008.KL.csv,FARLIM.6041.KL.csv,RALCO.7498.KL.csv,JASKITA.8648.KL.csv,MBMR.5983.KL.csv,TOYOINK.7173.KL.csv,LCHEONG.7943.KL.csv,WIDETEC.7692.KL.csv'
+    S.RESUME_FILE = False
+    S.DBG_YAHOO = False
+    S.DBG_ALL = False
+    S.MARKET_SOURCE = 'google'
+    if len(stocks) > 0:
+        #  download only selected counters
+        if "," in stocks:
+            stocklist = stocks.split(",")
+        else:
+            stocklist = [stocks]
+        for stock in stocklist:
+            sdata = stock.split(".")
+            stock_name = sdata[0]
+            stock_code = sdata[1] + "." + sdata[2]
+            print stock_name, stock_code
+            sfile = (S.WORK_DIR + S.MARKET_SOURCE + '/' + stock_name + '.' +
+                     stock_code + '.csv')
+            download_from_source(cookie, crumb, sfile, stock_name, stock_code)
     else:
         #  download all counters found in the market file
         downloadMarket(market_file, cookie, crumb)
