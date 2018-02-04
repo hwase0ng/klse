@@ -5,6 +5,7 @@ Created on Dec 20, 2016
 '''
 from Main import settings as S
 from datetime import datetime
+import csv
 import mmap
 import openpyxl
 import os
@@ -65,18 +66,29 @@ def concat2quotes(directory, target):
         if S.DBG_ALL:
             print os.getcwd()
         os.system("del quotes.csv")
-        os.system("type *.csv >> quotes.txt")
-        os.system("ren quotes.txt quotes.csv")
-        cmd = "copy quotes.csv {0}".format(target).replace('/', '\\')
-        if S.DBG_ALL:
-            print cmd
-        os.system(cmd)
-    '''
-    with open('output_file.txt','w') as wfd:
-    for f in ['seg1.txt','seg2.txt','seg3.txt']:
-        with open(f,'rb') as fd:
-            shutil.copyfileobj(fd, wfd, 1024*1024*10)
-    '''
+#       os.system("type *.csv >> quotes.txt")
+        with open(S.WORK_DIR + S.SHORTLISTED_FILE, 'r') as f:
+            reader = csv.reader(f)
+            slist = list(reader)
+            stklist = []
+            for csvfile in slist[:]:
+                stklist.append(csvfile[0])
+            stks = " ".join(stklist)
+            cmd = "type {0} >> quotes.txt".format(stks)
+            os.system("ren quotes.txt quotes.csv")
+            if S.DBG_ALL:
+                print cmd
+            os.system(cmd)
+            cmd = "copy quotes.csv {0}".format(target).replace('/', '\\')
+            if S.DBG_ALL:
+                print cmd
+            os.system(cmd)
+        '''
+        with open('output_file.txt','w') as wfd:
+        for f in ['seg1.txt','seg2.txt','seg3.txt']:
+            with open(f,'rb') as fd:
+                shutil.copyfileobj(fd, wfd, 1024*1024*10)
+        '''
 
 
 def xls_to_xlsx(*args, **kw):
