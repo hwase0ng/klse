@@ -3,21 +3,23 @@ Created on Jul 16, 2016
 
 @author: t.roy
 '''
+from __future__ import with_statement
 
 import Main.settings as S
 
+from Main.settings import RESUME_FILE
 from datetime import datetime
 from Download.google import GoogleQuote
 from Download.yahoo import YahooQuote, getYahooCookie
 from Utils.dateutils import getLastDate, getTomorrow
 from Utils.fileutils import concat2quotes, cd, getSystemIP
 
+import json
 import sys
 import csv
 import os.path
 import requests
 import re
-from Main.settings import RESUME_FILE
 
 
 def get_start_end_obsoleted():
@@ -153,7 +155,43 @@ def download_from_source(cookie, crumb, fname, stock_name, stock_code, end=getTo
     '''
 
 
+def loadSetting(c):
+    S.WORK_DIR = c["main"]["WORK_DIR"]
+    S.WORK_DIR_MT4 = c["main"]["WORK_DIR_MT4"]
+    S.MARKET_SOURCE = c["main"]["MARKET_SOURCE"]
+    S.MARKET_FILE = c["main"]["MARKET_FILE"]
+    S.SHORTLISTED_FILE = c["main"]["SHORTLISTED_FILE"]
+    S.ABS_START = c["main"]["ABS_START"]
+    S.RESUME_FILE = c["toggle"]["RESUME_FILE"]
+    S.PRICE_WITHOUT_SPLIT = c["toggle"]["PRICE_WITHOUT_SPLIT"]
+    S.INF_YAHOO = c["toggle"]["INF_YAHOO"]
+    S.DBG_YAHOO = c["toggle"]["DBG_YAHOO"]
+    S.DBG_ALL = c["toggle"]["DBG_ALL"]
+    print S.WORK_DIR_MT4
+
+
+def loadCfg():
+    try:
+        with open('config.json') as json_data_file:
+            cfg = json.load(json_data_file)
+            loadSetting(cfg)
+            if S.DBG_ALL:
+                print "WORK DIR = ", cfg["main"]["WORK_DIR"]
+                print "MARKET FILE = ", cfg["main"]["MARKET_FILE"]
+            with open(cfg["main"]["WORK_DIR"] + cfg["main"]["MARKET_FILE"], 'r') as f:
+                reader = csv.reader(f)
+                slist = list(reader)
+                if S.DBG_ALL:
+                    print slist[:3]
+            return cfg
+    except EnvironmentError:
+        print "Missing config.json file"
+        sys.exit(1)
+
+
 if __name__ == '__main__':
+    cfg = loadCfg()
+
     cookie, crumb = getYahooCookie()
     market_file = S.MARKET_FILE
     stocks = ''

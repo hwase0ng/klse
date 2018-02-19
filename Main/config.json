@@ -1,0 +1,18 @@
+{
+	"main":{
+		"WORK_DIR":"A:/Projects/EDS/klse/",
+		"WORK_DIR_MT4":"C:/Users/hwase/AppData/Roaming/MetaQuotes/Terminal/9662C61C6715C26397817D3943CECEEC/history/klse",
+		"WORK_DIR_WIN":"A:\\Projects\\EDS\\klse\\",
+		"MARKET_SOURCE":"yahoo",
+		"MARKET_FILE":"klse.txt",
+		"SHORTLISTED_FILE":"klse_shortlisted.txt",
+		"ABS_START":"2007-01-01"
+	},
+	"toggle":{
+		"RESUME_FILE":true,
+		"PRICE_WITHOUT_SPLIT":true,
+		"INF_YAHOO":false,
+		"DBG_YAHOO":false,
+		"DBG_ALL":false
+	}
+}
