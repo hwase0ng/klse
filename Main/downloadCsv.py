@@ -167,7 +167,8 @@ def loadSetting(c):
     S.INF_YAHOO = c["toggle"]["INF_YAHOO"]
     S.DBG_YAHOO = c["toggle"]["DBG_YAHOO"]
     S.DBG_ALL = c["toggle"]["DBG_ALL"]
-    print S.WORK_DIR_MT4
+    if S.DBG_ALL:
+        print S.WORK_DIR_MT4
 
 
 def loadCfg():
@@ -178,11 +179,11 @@ def loadCfg():
             if S.DBG_ALL:
                 print "WORK DIR = ", cfg["main"]["WORK_DIR"]
                 print "MARKET FILE = ", cfg["main"]["MARKET_FILE"]
-            with open(cfg["main"]["WORK_DIR"] + cfg["main"]["MARKET_FILE"], 'r') as f:
-                reader = csv.reader(f)
-                slist = list(reader)
-                if S.DBG_ALL:
-                    print slist[:3]
+                with open(cfg["main"]["WORK_DIR"] + cfg["main"]["MARKET_FILE"], 'r') as f:
+                    reader = csv.reader(f)
+                    slist = list(reader)
+                    if S.DBG_ALL:
+                        print slist[:3]
             return cfg
     except EnvironmentError:
         print "Missing config.json file"
@@ -227,13 +228,6 @@ if __name__ == '__main__':
     ip = getSystemIP()
     if S.DBG_ALL:
         print ip
-    if ip.endswith(".2"):
-        S.WORK_DIR_MT4 = S.WORK_DIR_MT4_2
-    else:
-        if ip.endswith(".10"):
-            S.WORK_DIR_MT4 = S.WORK_DIR_MT4_10
-        else:
-            S.WORK_DIR_MT4 = S.WORK_DIR_MT4_100
     concat2quotes(S.WORK_DIR + S.MARKET_SOURCE, S.WORK_DIR_MT4)
     with cd(S.WORK_DIR_MT4):
         os.system("perl mt4dw.pl")
