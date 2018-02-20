@@ -182,8 +182,7 @@ def loadCfg():
                 with open(cfg["main"]["WORK_DIR"] + cfg["main"]["MARKET_FILE"], 'r') as f:
                     reader = csv.reader(f)
                     slist = list(reader)
-                    if S.DBG_ALL:
-                        print slist[:3]
+                    print slist[:3]
             return cfg
     except EnvironmentError:
         print "Missing config.json file"
