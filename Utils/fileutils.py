@@ -152,10 +152,13 @@ class cd:
 if __name__ == '__main__':
     ip = getSystemIP()
     print type(ip), ip
-    if ip.endswith(".2"):
-        S.WORK_DIR_MT4 = S.WORK_DIR_MT4_2
-    else:
-        S.WORK_DIR_MT4 = S.WORK_DIR_MT4_10
+    if S.WORK_DIR_MT4 == '':
+        if ip.endswith(".2"):
+            S.WORK_DIR_MT4 = S.WORK_DIR_MT4_2
+        elif ip.endswith(".10"):
+            S.WORK_DIR_MT4 = S.WORK_DIR_MT4_10
+        else:
+            S.WORK_DIR_MT4 = S.WORK_DIR_MT4_100
     concat2quotes(S.WORK_DIR + S.MARKET_SOURCE, S.WORK_DIR_MT4)
     with cd(S.WORK_DIR_MT4):
         os.system("perl mt4dw.pl")

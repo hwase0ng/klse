@@ -91,8 +91,8 @@ def getTomorrow(fm="%Y%m%d"):
 
 
 def getYesterday(fm="%Y%m%d"):
-    tmr = datetime.today() + timedelta(days=-1)
-    return tmr.strftime(fm)
+    yesterday = datetime.today() + timedelta(days=-1)
+    return yesterday.strftime(fm)
 
 
 if __name__ == '__main__':
