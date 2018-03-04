@@ -59,8 +59,9 @@ class Quote(object):
         except KeyError:
             if S.DBG_ALL:
                 print "KeyError: " + self.name
-            return "KeyError: " + self.name
+            return "KeyError: No such record for " + self.name
         except Exception as e:
+            print "Exception:", e
             raise e
 
     def to_df(self):
@@ -87,7 +88,9 @@ class Quote(object):
             df.drop('Change %', axis=1, inplace=True)
             df.drop('Vol.', axis=1, inplace=True)
             df.sort_values(by='Date', inplace=True)
-        except ValueError:
+        except ValueError as ve:
+            print "ValueError ", self.name, ve
+            # print self.response
             return "ValueError"
         except Exception as e:
             df = 'Exception'
@@ -110,7 +113,7 @@ def loadIdMap():
         print "Missing idmap.ini file"
         sys.exit(1)
     except KeyError:
-        print "KeyError:", name
+        print "loadIdMap KeyError:", name
         sys.exit(2)
     return ID_MAPPING
 

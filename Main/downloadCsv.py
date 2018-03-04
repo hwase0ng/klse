@@ -23,6 +23,13 @@ import requests
 import re
 from Download import scrapeInvestingCom
 
+url = []
+url.append('https://uk.finance.yahoo.com/quote/AAPL/history')
+url.append('https://uk.finance.yahoo.com/quote/GOOG/history')
+url.append('https://finance.yahoo.com/quote/APPL/history')
+url.append('https://finance.yahoo.com/quote/GOOG/history')
+url.append('https://finance.yahoo.com/quote/AMZN/history')
+
 
 def get_start_end_obsoleted():
     lastcsv = S.WORK_DIR + 'lastcsv.txt'
@@ -63,6 +70,9 @@ def downloadMarket(mkt, cookie, crumb):
                 continue
             stock_symbol = counter[0].split('.')
             stock_name = stock_symbol[0]
+            if len(counter) < 2:
+                print "ERR:Counter too short:", stock_symbol, stock_name, counter
+                continue
             stock_code = counter[1]
             if S.DBG_ALL:
                 print stock_name, stock_symbol, stock_code
@@ -71,11 +81,23 @@ def downloadMarket(mkt, cookie, crumb):
             count = 0
             while count < 3:
                 count = count + 1
-                rtncd = download_from_source(cookie, crumb, sfile, stock_name, stock_code)
+                if cookie != '':
+                    if len(S.ABS_END) == 0:
+                        rtncd = download_from_source(cookie, crumb, sfile, stock_name, stock_code)
+                    else:
+                        rtncd = download_from_source(cookie, crumb, sfile, stock_name, stock_code, S.ABS_END)
+                else:
+                    rtncd = 401
                 if rtncd > 0:  # 400, Bad Request, 401 = Unauthorized
                     if S.DBG_YAHOO:
                         print "DBG:new cookie required, st_code =", rtncd
-                    cookie, crumb = getYahooCookie()
+                    # Can get ConnectionError while getting cookies
+                    cookie_count = 0
+                    while cookie_count < 5:
+                        cookie, crumb = getYahooCookie(url[cookie_count])
+                        if cookie != '':
+                            cookie_count = 99
+                        cookie_count = cookie_count + 1
                 else:
                     count = 99
 
@@ -133,7 +155,10 @@ def download_from_source(cookie, crumb, fname, stock_name, stock_code, end=getTo
         else:
             rtn_code = -2
     except Exception, e:
-        print '  ERR2:', stock_code + ":" + stock_name + ":" + str(e)
+        if S.MARKET_SOURCE == 'investing.com':
+            print '  ERR2:', stock_code + ":" + stock_name
+        else:
+            print '  ERR2:', stock_code + ":" + stock_name + ":" + str(e)
         if S.DBG_ALL:
             print q.getCsvErr()
         rtn_code = -3
@@ -205,17 +230,18 @@ if __name__ == '__main__':
 #   stocks = 'DAIBOCI.8125.KL.csv,HOHUP.5169.KL.csv,IVORY.5175.KL.csv,N2N.0108.KL.csv,PMBTECH.7172.KL.csv'
 #   stocks = 'NAKA.7002.KL.csv,GNB.0045.KL.csv,XIANLNG.7121.KL.csv,KPOWER.7130.KL.csv,SKBSHUT.7115.KL.csv,ICAP.5108.KL.csv,SERBADK.5279.KL.csv,MALPAC.4936.KL.csv,MESB.7234.KL.csv,UMWOG.5243.KL.csv,PLABS.0171.KL.csv,BIPORT.5032.KL.csv,TROP.5401.KL.csv,DELEUM.5132.KL.csv,EUPE.6815.KL.csv,TALIWRK.8524.KL.csv,MCT.5182.KL.csv,CNI.5104.KL.csv,AMTEL.7031.KL.csv,TURBO.5167.KL.csv,RVIEW.2542.KL.csv,PINEAPP.0006.KL.csv,AMTEK.7051.KL.csv,AFUJIYA.5198.KL.csv,Y&G.7003.KL.csv,MILUX.7935.KL.csv,QUALITY.7544.KL.csv,SJC.9431.KL.csv,TGL.9369.KL.csv,ASIABRN.7722.KL.csv,TAHPS.2305.KL.csv,NPC.5047.KL.csv,CFM.8044.KL.csv,HUBLINE.7013.KL.csv,COMPUGT.5037.KL.csv,YEELEE.5584.KL.csv,HUAAN.2739.KL.csv,TEXCYCL.0089.KL.csv,EAH.0154.KL.csv,PCHEM.5183.KL.csv,PICORP.7201.KL.csv,HARTA.5168.KL.csv,LAYHONG.9385.KL.csv,GBH.3611.KL.csv,EDGENTA.1368.KL.csv,MISC.3816.KL.csv,TDEX.0132.KL.csv,DOMINAN.7169.KL.csv,GOB.1147.KL.csv,MCLEAN.0167.KL.csv,BDB.6173.KL.csv,UMCCA.2593.KL.csv,BJLAND.4219.KL.csv,ASB.1481.KL.csv,DPS.7198.KL.csv,KIMHIN.5371.KL.csv,ECM.2143.KL.csv,WANGZNG.7203.KL.csv,OMESTI.9008.KL.csv,FARLIM.6041.KL.csv,RALCO.7498.KL.csv,JASKITA.8648.KL.csv,MBMR.5983.KL.csv,TOYOINK.7173.KL.csv,LCHEONG.7943.KL.csv,WIDETEC.7692.KL.csv'
 #   stocks = 'MAYBANK.1155.KL.csv,NESTLE.4707.KL.csv,PBBANK.1295.KL.csv'
-    stocks = 'AMVERTON.5959.KL.csv'
-    S.RESUME_FILE = False
+    stocks = 'AIRASIA.5099.KL.csv'
+    S.RESUME_FILE = True
     S.DBG_YAHOO = False
     S.DBG_ALL = False
-    S.MARKET_SOURCE = 'investing.com'
+    S.MARKET_SOURCE = 'yahoo'
     if S.MARKET_SOURCE == 'yahoo':
-        cookie, crumb = getYahooCookie()
+        cookie, crumb = getYahooCookie(url[0])
     else:
         cookie = ''
         crumb = ''
-    S.ABS_START = '2018-02-01'
+#   S.ABS_START = '2018-02-01'
+#   S.ABS_END = '2018-01-31'
     if len(stocks) > 0:
         #  download only selected counters
         if "," in stocks:
@@ -229,7 +255,10 @@ if __name__ == '__main__':
             print stock_name, stock_code
             sfile = (S.WORK_DIR + S.MARKET_SOURCE + '/' + stock_name + '.' +
                      stock_code + '.csv')
-            download_from_source(cookie, crumb, sfile, stock_name, stock_code)
+            if len(S.ABS_END) == 0:
+                download_from_source(cookie, crumb, sfile, stock_name, stock_code)
+            else:
+                download_from_source(cookie, crumb, sfile, stock_name, stock_code, S.ABS_END)
     else:
         #  download all counters found in the market file
         downloadMarket(market_file, cookie, crumb)
@@ -248,6 +277,6 @@ if __name__ == '__main__':
             S.WORK_DIR_MT4 = S.WORK_DIR_MT4_100
     concat2quotes(S.WORK_DIR + S.MARKET_SOURCE, S.WORK_DIR_MT4)
     with cd(S.WORK_DIR_MT4):
-        os.system("perl mt4dw.pl")
+        os.system("c:/perl/bin/perl mt4dw.pl")
     print "Done."
     pass

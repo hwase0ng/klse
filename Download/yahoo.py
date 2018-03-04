@@ -24,13 +24,19 @@ import requests
 import re
 from Utils.dateutils import getToday, getTomorrow, getYesterday, getNextDay
 import csv
+from requests.exceptions import ConnectionError
 
 
-def getYahooCookie():
+def getYahooCookie(url):
     # search with regular expressions
     # "CrumbStore":\{"crumb":"(?<crumb>[^"]+)"\}
-    url = 'https://uk.finance.yahoo.com/quote/AAPL/history'  # url for a ticker symbol, with a download link
-    r = requests.get(url)  # download page
+    # url = 'https://uk.finance.yahoo.com/quote/AAPL/history'  # url for a ticker symbol, with a download link
+    try:
+        r = requests.get(url)  # download page
+    except ConnectionError as ce:
+        print "\tConnectionError:", ce
+        return '', ''
+
     txt = r.text  # extract html
     cookie = r.cookies['B']  # the cooke we're looking for is named 'B'
     if S.DBG_ALL or S.DBG_YAHOO:
@@ -271,14 +277,15 @@ class YahooQuote(Quote):
 
 
 if __name__ == '__main__':
-    stock_code = '5099.KL'
-    stock_name = 'AIRASIA'
-    cookie, crumb = getYahooCookie()
+    S.DBG_YAHOO = True
+    stock_code = '3255.KL'
+    stock_name = 'GAB'
+    cookie, crumb = getYahooCookie('https://uk.finance.yahoo.com/quote/AAPL/history')
     sfile = (S.WORK_DIR + S.MARKET_SOURCE + '/' + stock_name + '.' +
              stock_code + '.csv')
     q = YahooQuote(cookie, crumb, stock_name, stock_code,
-                   #  "2007-01-01", getTomorrow("%Y-%m-%d"))
-                   getToday("%Y-%m-%d"), getTomorrow("%Y-%m-%d"))
+                   "2018-03-01", getTomorrow("%Y-%m-%d"))
+    #    getToday("%Y-%m-%d"), getTomorrow("%Y-%m-%d"))
     writeCsv = False
     if writeCsv:
         q.write_csv(sfile)
