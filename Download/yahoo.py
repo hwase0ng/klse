@@ -38,7 +38,12 @@ def getYahooCookie(url):
         return '', ''
 
     txt = r.text  # extract html
-    cookie = r.cookies['B']  # the cooke we're looking for is named 'B'
+    try:
+        cookie = r.cookies['B']  # the cooke we're looking for is named 'B'
+    except KeyError as ke:
+        print "getYahooCookie KeyError: ", ke
+        print url
+        cookie = ''
     if S.DBG_ALL or S.DBG_YAHOO:
         print 'DBG:getYahooCookie: ', cookie
 

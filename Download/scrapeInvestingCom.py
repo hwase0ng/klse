@@ -79,25 +79,53 @@ class Quote(object):
             df["Close"] = df["Price"]
             df.insert(7, "Volume", np.nan)
 
-            mp = {'K': ' * 10**3', 'M': ' * 10**6'}
-            # Convert k to 1000 and m to 1000000
-            # Can only support max 5 months of EOD to convert
-            df["Volume"] = pd.eval(df["Vol."].replace(mp.keys(), mp.values(), regex=True).str.replace(r'[^\d\.\*]+', ''))
+            if self.name.startswith('FTFBM'):
+                df['Volume'] = df["Vol."]
+            else:
+                mp = {'K': ' * 10**3', 'M': ' * 10**6'}
+                # Convert k to 1000 and m to 1000000
+                # Can only support max 5 months of EOD to convert
+                df["Volume"] = pd.eval(df["Vol."].replace(mp.keys(), mp.values(), regex=True).str.replace(r'[^\d\.\*]+', ''))
 
             df.drop('Price', axis=1, inplace=True)
             df.drop('Change %', axis=1, inplace=True)
             df.drop('Vol.', axis=1, inplace=True)
             df.sort_values(by='Date', inplace=True)
         except ValueError as ve:
-            print "ValueError ", self.name, ve
-            # print self.response
-            return "ValueError"
+            df = 'ValueError'
+            self.csverr = self.name + ": ValueError (No data for date range) " + ' (' + str(ve) + ')'
         except Exception as e:
             df = 'Exception'
-            print self.start, self.end, e
-            raise e
+            self.csverr = self.name + ":" + self.start + "," + self.end + ":" + str(e)
+            # raise e
 
         return df
+
+
+class InvestingQuote(Quote):
+    def __init__(self, idmap, sname, last_date, end_date=du.getToday("%Y-%m-%d")):
+        if last_date == end_date:
+            self.csverr = sname + ": Skipped downloaded (" + last_date + ")"
+            return
+        last_date = du.getNextDay(last_date)
+        if last_date > end_date:
+            self.csverr = sname + ": Invalid dates (" + last_date + "," + end_date + ")"
+            return
+
+        last_date = datetime.datetime.strptime(last_date, "%Y-%m-%d").strftime('%m/%d/%Y')
+        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d").strftime('%m/%d/%Y')
+        super(InvestingQuote, self).__init__(sname, last_date, end_date, idmap)
+        self.response = self.scrape()
+        # s0 = Quote(sname, last_date, end_date, idmap)
+        if isinstance(self.response, unicode):
+            s1 = self.to_df()
+            if isinstance(s1, pd.DataFrame):
+                s1.index.name = 'index'
+                self.s1 = s1
+                self.csverr = ''
+                # s1.to_csv(OUTPUT_FILE, index=False, header=False)
+        else:
+            self.csverr = sname + ":" + self.response + "," + last_date + "," + end_date
 
 
 def loadIdMap():
@@ -116,28 +144,6 @@ def loadIdMap():
         print "loadIdMap KeyError:", name
         sys.exit(2)
     return ID_MAPPING
-
-
-class InvestingQuote(Quote):
-    def __init__(self, idmap, sname, last_date, end_date=du.getYesterday("%Y-%m-%d")):
-        last_date = datetime.datetime.strptime(last_date, "%Y-%m-%d").strftime('%m/%d/%Y')
-        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d").strftime('%m/%d/%Y')
-        super(InvestingQuote, self).__init__(sname, last_date, end_date, idmap)
-        self.response = self.scrape()
-        # s0 = Quote(sname, last_date, end_date, idmap)
-        if isinstance(self.response, unicode):
-            s1 = self.to_df()
-            if isinstance(s1, pd.DataFrame):
-                s1.index.name = 'index'
-                self.s1 = s1
-                self.csverr = ''
-                # s1.to_csv(OUTPUT_FILE, index=False, header=False)
-            else:
-                self.csverr = s1 + ": " + counter + "," + last_date + "," + end_date
-                print self.csverr
-        else:
-            self.csverr = self.response + "," + last_date + "," + end_date
-            print self.csverr
 
 
 if __name__ == '__main__':

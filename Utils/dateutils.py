@@ -49,6 +49,7 @@ def getDayOfWeek(pdate):
 
 
 def getNextDay(pdate):
+    # Expecting input: YYYY-MM-DD
     if S.DBG_ALL:
         print pdate, len(pdate)
     if len(pdate) != 10:

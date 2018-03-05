@@ -16,6 +16,7 @@ MARKET_FILE = 'klse.txt'
 SHORTLISTED_FILE = 'klse_shortlisted.txt'
 ABS_START = '2007-01-01'
 ABS_END = ''
+IDMAP = ''
 
 # Features toggle
 DBG_ALL = False

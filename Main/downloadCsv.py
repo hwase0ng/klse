@@ -24,11 +24,6 @@ import re
 from Download import scrapeInvestingCom
 
 url = []
-url.append('https://uk.finance.yahoo.com/quote/AAPL/history')
-url.append('https://uk.finance.yahoo.com/quote/GOOG/history')
-url.append('https://finance.yahoo.com/quote/APPL/history')
-url.append('https://finance.yahoo.com/quote/GOOG/history')
-url.append('https://finance.yahoo.com/quote/AMZN/history')
 
 
 def get_start_end_obsoleted():
@@ -81,14 +76,14 @@ def downloadMarket(mkt, cookie, crumb):
             count = 0
             while count < 3:
                 count = count + 1
-                if cookie != '':
+                if (S.MARKET_SOURCE == 'yahoo' and cookie != '') or S.MARKET_SOURCE != 'yahoo':
                     if len(S.ABS_END) == 0:
                         rtncd = download_from_source(cookie, crumb, sfile, stock_name, stock_code)
                     else:
                         rtncd = download_from_source(cookie, crumb, sfile, stock_name, stock_code, S.ABS_END)
                 else:
                     rtncd = 401
-                if rtncd > 0:  # 400, Bad Request, 401 = Unauthorized
+                if rtncd > 0 and S.MARKET_SOURCE == 'yahoo':  # 400, Bad Request, 401 = Unauthorized
                     if S.DBG_YAHOO:
                         print "DBG:new cookie required, st_code =", rtncd
                     # Can get ConnectionError while getting cookies
@@ -133,10 +128,13 @@ def download_from_source(cookie, crumb, fname, stock_name, stock_code, end=getTo
         if S.DBG_ALL:
             print "\tDates=" + lastdt + "," + end
         if len(lastdt) > 0:
-            if S.MARKET_SOURCE == 'investing.com' or (
-                    RESUME_FILE is False):
-                idmap = scrapeInvestingCom.loadIdMap()
-                q = InvestingQuote(idmap, stock_name, lastdt, end)
+            if S.MARKET_SOURCE == 'investing.com' or stock_code.startswith('020'):
+                if len(S.IDMAP) <= 0:
+                    S.IDMAP = scrapeInvestingCom.loadIdMap()
+                if len(S.ABS_END) == 0:
+                    q = InvestingQuote(S.IDMAP, stock_name, lastdt)
+                else:
+                    q = InvestingQuote(S.IDMAP, stock_name, lastdt, end)
             elif S.MARKET_SOURCE == 'yahoo':
                 q = YahooQuote(cookie, crumb, stock_name, stock_code, lastdt, end)
             elif S.MARKET_SOURCE == 'google':
@@ -145,10 +143,14 @@ def download_from_source(cookie, crumb, fname, stock_name, stock_code, end=getTo
                 print "Invalid market source:" + S.MARKET_SOURCE
                 sys.exit(-1)
             if len(q.getCsvErr()) > 0:
-                st_code, st_reason = q.getCsvErr().split(":")
-                rtn_code = int(st_code)
-                if S.INF_YAHOO:
-                    print "INF:", st_code, st_reason, ":", stock_name
+                if S.MARKET_SOURCE == 'yahoo':
+                    st_code, st_reason = q.getCsvErr().split(":")
+                    rtn_code = int(st_code)
+                    if S.INF_YAHOO:
+                        print "INF:", st_code, st_reason, ":", stock_name
+                else:
+                    print q.getCsvErr()
+                    rtn_code = -1
             else:
                 #  gDict[stock_name] = q.url
                 q.write_csv(stmp)
@@ -229,18 +231,24 @@ if __name__ == '__main__':
     stocks = ''
 #   stocks = 'DAIBOCI.8125.KL.csv,HOHUP.5169.KL.csv,IVORY.5175.KL.csv,N2N.0108.KL.csv,PMBTECH.7172.KL.csv'
 #   stocks = 'NAKA.7002.KL.csv,GNB.0045.KL.csv,XIANLNG.7121.KL.csv,KPOWER.7130.KL.csv,SKBSHUT.7115.KL.csv,ICAP.5108.KL.csv,SERBADK.5279.KL.csv,MALPAC.4936.KL.csv,MESB.7234.KL.csv,UMWOG.5243.KL.csv,PLABS.0171.KL.csv,BIPORT.5032.KL.csv,TROP.5401.KL.csv,DELEUM.5132.KL.csv,EUPE.6815.KL.csv,TALIWRK.8524.KL.csv,MCT.5182.KL.csv,CNI.5104.KL.csv,AMTEL.7031.KL.csv,TURBO.5167.KL.csv,RVIEW.2542.KL.csv,PINEAPP.0006.KL.csv,AMTEK.7051.KL.csv,AFUJIYA.5198.KL.csv,Y&G.7003.KL.csv,MILUX.7935.KL.csv,QUALITY.7544.KL.csv,SJC.9431.KL.csv,TGL.9369.KL.csv,ASIABRN.7722.KL.csv,TAHPS.2305.KL.csv,NPC.5047.KL.csv,CFM.8044.KL.csv,HUBLINE.7013.KL.csv,COMPUGT.5037.KL.csv,YEELEE.5584.KL.csv,HUAAN.2739.KL.csv,TEXCYCL.0089.KL.csv,EAH.0154.KL.csv,PCHEM.5183.KL.csv,PICORP.7201.KL.csv,HARTA.5168.KL.csv,LAYHONG.9385.KL.csv,GBH.3611.KL.csv,EDGENTA.1368.KL.csv,MISC.3816.KL.csv,TDEX.0132.KL.csv,DOMINAN.7169.KL.csv,GOB.1147.KL.csv,MCLEAN.0167.KL.csv,BDB.6173.KL.csv,UMCCA.2593.KL.csv,BJLAND.4219.KL.csv,ASB.1481.KL.csv,DPS.7198.KL.csv,KIMHIN.5371.KL.csv,ECM.2143.KL.csv,WANGZNG.7203.KL.csv,OMESTI.9008.KL.csv,FARLIM.6041.KL.csv,RALCO.7498.KL.csv,JASKITA.8648.KL.csv,MBMR.5983.KL.csv,TOYOINK.7173.KL.csv,LCHEONG.7943.KL.csv,WIDETEC.7692.KL.csv'
-#   stocks = 'MAYBANK.1155.KL.csv,NESTLE.4707.KL.csv,PBBANK.1295.KL.csv'
-    stocks = 'AIRASIA.5099.KL.csv'
+#   stocks = 'FTFBM100.0200.KL.csv,FTFBMKLCI.0201.KL.csv,FTFBMMES.0202.KL.csv,FTFBMSCAP.0203.KL.csv'
+#   stocks = 'FITTERS.9318.KL.csv'
+
     S.RESUME_FILE = True
     S.DBG_YAHOO = False
     S.DBG_ALL = False
-    S.MARKET_SOURCE = 'yahoo'
+    S.MARKET_SOURCE = 'investing.com'
     if S.MARKET_SOURCE == 'yahoo':
         cookie, crumb = getYahooCookie(url[0])
+        url.append('https://uk.finance.yahoo.com/quote/AAPL/history')
+        url.append('https://uk.finance.yahoo.com/quote/GOOG/history')
+        url.append('https://finance.yahoo.com/quote/APPL/history')
+        url.append('https://finance.yahoo.com/quote/GOOG/history')
+        url.append('https://finance.yahoo.com/quote/AMZN/history')
     else:
         cookie = ''
         crumb = ''
-#   S.ABS_START = '2018-02-01'
+#   S.ABS_START = '2018-01-01'
 #   S.ABS_END = '2018-01-31'
     if len(stocks) > 0:
         #  download only selected counters
