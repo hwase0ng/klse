@@ -106,11 +106,16 @@ class InvestingQuote(Quote):
     def __init__(self, idmap, sname, last_date, end_date=du.getToday("%Y-%m-%d")):
         if last_date == end_date:
             self.csverr = sname + ": Skipped downloaded (" + last_date + ")"
-            return
+            return None
         last_date = du.getNextDay(last_date)
         if last_date > end_date:
             self.csverr = sname + ": Invalid dates (" + last_date + "," + end_date + ")"
-            return
+            return None
+        # Do not download today's EOD if market is still open
+        if end_date == du.getToday("%Y-%m-%d"):
+            now = datetime.datetime.now()
+            if now.hour < 18:  # only download today's EOD if it is after 6pm local time
+                end_date = du.getYesterday("%Y-%m-%d")
 
         last_date = datetime.datetime.strptime(last_date, "%Y-%m-%d").strftime('%m/%d/%Y')
         end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d").strftime('%m/%d/%Y')

@@ -18,6 +18,7 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import Main.settings as S
+import Utils.dateutils as du
 import calendar
 from datetime import datetime, date
 import requests
@@ -174,6 +175,11 @@ class YahooQuote(Quote):
         start_date = getNextDay(last_date)
         if S.DBG_ALL or S.DBG_YAHOO:
             print "DBG:YahooQuote:1:", symbol, self.symbol, last_date, start_date
+        # Do not download today's EOD if market is still open
+        if end_date == du.getToday("%Y-%m-%d"):
+            now = datetime.datetime.now()
+            if now.hour < 18:  # only download today's EOD if it is after 6pm local time
+                end_date = du.getYesterday("%Y-%m-%d")
 #       self.url = self.formUrl_old(symbol,last_date,end_date)
         self.url = self.formUrl(crumb, symbol, start_date, end_date)
         if S.DBG_ALL or S.DBG_YAHOO:
