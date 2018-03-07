@@ -5,6 +5,7 @@ import sys
 import pandas as pd
 import numpy as np
 import datetime
+import math
 
 
 class Quote(object):
@@ -72,6 +73,13 @@ class Quote(object):
         try:
             df = pd.read_html(self.response)
             df = df[0]  # Ignore footer table
+            if S.DBG_ICOM:
+                df.to_csv(S.WORK_DIR + S.MARKET_SOURCE + "/" + self.name + ".inf")
+            price = df['Price'][0]
+            # print self.name, type(price), price
+            if math.isnan(price):
+                # No result found
+                return None
             df["Date"] = pd.to_datetime(df["Date"])
             df.insert(0, "Commodity", np.nan)
             df["Commodity"] = self.name
@@ -83,6 +91,10 @@ class Quote(object):
                 df['Volume'] = df["Vol."]
             else:
                 mp = {'K': ' * 10**3', 'M': ' * 10**6'}
+                # vol = df['Vol.'][0]
+                # print type(vol), vol
+                df['Vol.'] = df['Vol.'].replace('-', '0.1K')
+                df['Vol.'] = df['Vol.'].replace(0, '0.1K')   # replace all 0 vol with 100 shares
                 # Convert k to 1000 and m to 1000000
                 # Can only support max 5 months of EOD to convert
                 df["Volume"] = pd.eval(df["Vol."].replace(mp.keys(), mp.values(), regex=True).str.replace(r'[^\d\.\*]+', ''))
@@ -94,9 +106,19 @@ class Quote(object):
         except ValueError as ve:
             df = 'ValueError'
             self.csverr = self.name + ": ValueError (No data for date range) " + ' (' + str(ve) + ')'
+            if S.DBG_ICOM:
+                with open(S.WORK_DIR + "value.err", 'ab') as f:
+                    f.write('\n=============================\n')
+                    f.write(self.name + "\n")
+                    f.write(self.response)
         except Exception as e:
-            df = 'Exception'
+            if S.DBG_ICOM:
+                with open(S.WORK_DIR + "value.err", 'ab') as f:
+                    f.write('\n=============================\n')
+                    f.write(self.name + "\n")
+                    f.write(self.response)
             self.csverr = self.name + ":" + self.start + "," + self.end + ":" + str(e)
+            df = 'Exception'
             # raise e
 
         return df
@@ -129,6 +151,11 @@ class InvestingQuote(Quote):
                 self.s1 = s1
                 self.csverr = ''
                 # s1.to_csv(OUTPUT_FILE, index=False, header=False)
+            elif s1 is None:
+                self.csverr = self.name + ':Skipped no result'
+            else:
+                # Use csverr from to_df()
+                return
         else:
             self.csverr = sname + ":" + self.response + "," + last_date + "," + end_date
 

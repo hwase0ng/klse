@@ -1,8 +1,8 @@
 {
 	"main":{
-		"WORK_DIR":"C:/Users/hwase/Google Drive/Projects/EDS/klse/",
+		"WORK_DIR":"C:/Users/hwase/klse/",
 		"WORK_DIR_MT4":"",
-		"WORK_DIR_WIN":"C:\\Users\\hwase\\Google Drive\\Projects\\EDS\\klse\\",
+		"WORK_DIR_WIN":"C:\\Users\\klse\\",
 		"MARKET_SOURCE":"yahoo",
 		"MARKET_FILE":"klse.txt",
 		"SHORTLISTED_FILE":"klse_shortlisted.txt",

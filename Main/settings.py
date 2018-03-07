@@ -20,6 +20,7 @@ IDMAP = ''
 
 # Features toggle
 DBG_ALL = False
+DBG_ICOM = False
 DBG_YAHOO = False
 INF_YAHOO = True
 RESUME_FILE = True  # False = fresh reload from ABS_START date, True = only download from next date of last record
