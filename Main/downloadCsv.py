@@ -234,20 +234,25 @@ if __name__ == '__main__':
 #   stocks = 'FTFBM100.0200.KL.csv,FTFBMKLCI.0201.KL.csv,FTFBMMES.0202.KL.csv,FTFBMSCAP.0203.KL.csv'
 #   stocks = 'AASIA.7054.KL.csv'
 
-    S.RESUME_FILE = False
+    S.RESUME_FILE = True
     S.DBG_YAHOO = False
+    S.DBG_ICOM = False
     S.DBG_ALL = False
-    S.MARKET_SOURCE = 'investing.com'
-    if S.MARKET_SOURCE == 'yahoo':
-        cookie, crumb = getYahooCookie(url[0])
+
+    if S.RESUME_FILE:
+        S.MARKET_SOURCE = 'investing.com'
+        cookie = ''
+        crumb = ''
+    else:
+        S.MARKET_SOURCE = 'yahoo'
+        S.ABS_END = '2018-01-31'    # yahoo finance data error after Feb 1, 2018
         url.append('https://uk.finance.yahoo.com/quote/AAPL/history')
         url.append('https://uk.finance.yahoo.com/quote/GOOG/history')
         url.append('https://finance.yahoo.com/quote/APPL/history')
         url.append('https://finance.yahoo.com/quote/GOOG/history')
         url.append('https://finance.yahoo.com/quote/AMZN/history')
-    else:
-        cookie = ''
-        crumb = ''
+        cookie, crumb = getYahooCookie(url[0])
+
 #   S.ABS_START = '2018-01-01'
 #   S.ABS_END = '2018-01-31'
     if len(stocks) > 0:

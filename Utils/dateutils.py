@@ -8,6 +8,7 @@ from matplotlib.dates import date2num
 from datetime import date, datetime, timedelta
 from Utils.fileutils import tail
 from time import time
+from pandas.compat import FileNotFoundError
 
 
 def get_now_epoch():
@@ -69,7 +70,13 @@ def getNextDay(pdate):
 
 
 def getLastDate(fn):
-    t = tail(fn)
+    try:
+        t = tail(fn)
+    except Exception, e:
+        print 'getLastDate', e
+        lastdt = S.ABS_START
+        return lastdt
+
     if len(t[0]) == 0:
         return ''
     else:

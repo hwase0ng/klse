@@ -60,7 +60,7 @@ class Quote(object):
         except KeyError:
             if S.DBG_ALL:
                 print "KeyError: " + self.name
-            return "KeyError: No such record for " + self.name
+            return "KeyError: No ID mapping for " + self.name
         except Exception as e:
             print "Exception:", e
             raise e
@@ -151,6 +151,7 @@ class InvestingQuote(Quote):
                 self.s1 = s1
                 self.csverr = ''
                 # s1.to_csv(OUTPUT_FILE, index=False, header=False)
+                print self.name + ":", last_date
             elif s1 is None:
                 self.csverr = self.name + ':Skipped no result'
             else:
