@@ -65,24 +65,29 @@ def concat2quotes(directory, target):
     with cd(directory):
         if S.DBG_ALL:
             print os.getcwd()
-        os.system("del quotes.csv")
 #       os.system("type *.csv >> quotes.txt")
-        with open(S.WORK_DIR + S.SHORTLISTED_FILE, 'r') as f:
-            reader = csv.reader(f)
-            slist = list(reader)
-            stklist = []
-            for csvfile in slist[:]:
-                stklist.append(csvfile[0])
-            stks = " ".join(stklist)
-            cmd = "type {0} >> quotes.txt".format(stks)
-            os.system("del quotes.csv")
-            os.system(cmd)
-            os.system("ren quotes.txt quotes.csv")
-            os.system(cmd)
-            cmd = "copy quotes.csv {0}".format(target).replace('/', '\\')
-            if S.DBG_ALL:
-                print cmd
-            os.system(cmd)
+        try:
+            with open(S.WORK_DIR + S.SHORTLISTED_FILE, 'r') as f:
+                # do a shorter list to reduce the processing time
+                reader = csv.reader(f)
+                slist = list(reader)
+                stklist = []
+                for csvfile in slist[:]:
+                    stklist.append(csvfile[0])
+                stks = " ".join(stklist)
+                cmd = "del quotes.csv"
+                os.system(cmd)
+                cmd = "type {0} >> quotes.txt".format(stks)
+                os.system(cmd)
+                cmd = "ren quotes.txt quotes.csv"
+                os.system(cmd)
+                cmd = "copy quotes.csv {0}".format(target).replace('/', '\\')
+                if S.DBG_ALL:
+                    print cmd
+                os.system(cmd)
+        except Exception, e:
+            print "concat2quotes: ", cmd
+            print e
         '''
         with open('output_file.txt','w') as wfd:
         for f in ['seg1.txt','seg2.txt','seg3.txt']:

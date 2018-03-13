@@ -158,7 +158,7 @@ class InvestingQuote(Quote):
                 # Use csverr from to_df()
                 return
         else:
-            self.csverr = sname + ":" + self.response + "," + last_date + "," + end_date
+            self.csverr = sname + ":" + self.response
 
 
 def loadIdMap():
