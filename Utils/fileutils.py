@@ -154,9 +154,27 @@ class cd:
         os.chdir(self.savedPath)
 
 
+'''
+def loadDashOptions():
+    try:
+        with open(S.WORK_DIR + S.MARKET_FILE, 'r') as f:
+            reader = csv.reader(f)
+            slist = list(reader)
+            stklist = []
+            for csvfile in slist[:]:
+                stklist.append(csvfile[0])
+            stks = " ".join(stklist)
+    except Exception, e:
+        pass
+
+    return slist
+'''
+
+
 if __name__ == '__main__':
     ip = getSystemIP()
     print type(ip), ip
+    S.WORK_DIR = 'C:/Users/hwase/klse/'
     if S.WORK_DIR_MT4 == '':
         if ip.endswith(".2"):
             S.WORK_DIR_MT4 = S.WORK_DIR_MT4_2

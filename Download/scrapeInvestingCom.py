@@ -87,7 +87,9 @@ class Quote(object):
             df["Close"] = df["Price"]
             df.insert(7, "Volume", np.nan)
 
-            if self.name.startswith('FTFBM'):
+            if self.name.startswith('USD'):
+                df['Volume'] = 0
+            elif self.name.startswith('FTFBM'):
                 df['Volume'] = df["Vol."]
             else:
                 mp = {'K': ' * 10**3', 'M': ' * 10**6'}
@@ -101,7 +103,9 @@ class Quote(object):
 
             df.drop('Price', axis=1, inplace=True)
             df.drop('Change %', axis=1, inplace=True)
-            df.drop('Vol.', axis=1, inplace=True)
+            if 'Vol.' in df.columns:
+                # FOREX has no "Vol." column
+                df.drop('Vol.', axis=1, inplace=True)
             df.sort_values(by='Date', inplace=True)
         except ValueError as ve:
             df = 'ValueError'
@@ -136,7 +140,12 @@ class InvestingQuote(Quote):
         # Do not download today's EOD if market is still open
         if end_date == du.getToday("%Y-%m-%d"):
             now = datetime.datetime.now()
-            if now.hour < 18:  # only download today's EOD if it is after 6pm local time
+            if sname.startswith('USD'):
+                if now.hour > 22:
+                    # US starts after 10pm Malaysia time
+                    end_date = du.getYesterday("%Y-%m-%d")
+            elif now.hour < 18:
+                # only download today's EOD if it is after 6pm local time
                 end_date = du.getYesterday("%Y-%m-%d")
 
         last_date = datetime.datetime.strptime(last_date, "%Y-%m-%d").strftime('%m/%d/%Y')
