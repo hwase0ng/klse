@@ -75,16 +75,22 @@ def concat2quotes(directory, target):
                 for csvfile in slist[:]:
                     stklist.append(csvfile[0])
                 stks = " ".join(stklist)
-                cmd = "del quotes.csv"
-                os.system(cmd)
+        except Exception, e:
+            stks = ''
+        try:
+            cmd = "del quotes.csv"
+            os.system(cmd)
+            if len(stks) == 0:
+                cmd = "type *.csv >> quotes.txt"
+            else:
                 cmd = "type {0} >> quotes.txt".format(stks)
-                os.system(cmd)
-                cmd = "ren quotes.txt quotes.csv"
-                os.system(cmd)
-                cmd = "copy quotes.csv {0}".format(target).replace('/', '\\')
-                if S.DBG_ALL:
-                    print cmd
-                os.system(cmd)
+            os.system(cmd)
+            cmd = "ren quotes.txt quotes.csv"
+            os.system(cmd)
+            cmd = "copy quotes.csv {0}".format(target).replace('/', '\\')
+            if S.DBG_ALL:
+                print cmd
+            os.system(cmd)
         except Exception, e:
             print "concat2quotes: ", cmd
             print e
