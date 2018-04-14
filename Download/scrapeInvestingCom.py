@@ -36,11 +36,11 @@ class Quote(object):
         scrape historical data from the investing.com site
 
         Stores a string with the result gotten from the site
-        """
         HEADERS = {
             "X-Requested-With": "XMLHttpRequest",
             "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36"
         }
+        """
 
         try:
             data = {
@@ -54,7 +54,7 @@ class Quote(object):
                 "action": "historical_data"
             }
 
-            r = requests.post(self.BASE_URL, data=data, headers=HEADERS)
+            r = requests.post(self.BASE_URL, data=data, headers=S.HEADERS)
             assert(r.status_code == 200)
             return r.text
         except KeyError:
